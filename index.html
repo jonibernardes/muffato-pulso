@@ -124,7 +124,7 @@ tbody tr.on{background:rgba(230,68,37,.05);box-shadow:inset 3px 0 0 var(--red)}
 .acts .btn{justify-content:center}
 .fx{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 .empty{padding:40px 16px;text-align:center;color:var(--tx3)}
-@media (max-width:1360px){.lay{grid-template-columns:1fr}.det{position:static;max-height:none;overflow:visible}}
+@media (max-width:1500px){.lay{grid-template-columns:1fr}.det{position:static;max-height:none;overflow:visible}}
 .big{font-size:40px;font-weight:900;letter-spacing:-.03em;font-variant-numeric:tabular-nums}
 .counter{font-size:34px;font-weight:900;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
 .bars{display:flex;align-items:end;gap:3px;height:52px;margin:12px 0}
@@ -256,7 +256,13 @@ details ul{margin:8px 0 0;padding-left:18px;line-height:1.9;font-size:13px}
   .tools .seg{width:100%;overflow-x:auto;flex-wrap:nowrap}.tools .seg button{white-space:nowrap}
   .counter{font-size:28px}.big{font-size:32px}
   .toast{bottom:84px}
+  .pick{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;margin-inline:-14px;padding-inline:14px}.pick::-webkit-scrollbar{display:none}.pk{white-space:nowrap;flex:none}
+  .det{position:fixed!important;left:0;right:0;bottom:0;top:auto;max-height:86vh!important;overflow-y:auto!important;z-index:55;border-radius:16px 16px 0 0;transform:translateY(105%);transition:transform .25s ease;visibility:hidden;padding-bottom:calc(18px + env(safe-area-inset-bottom,0px))}
+  .det.open{transform:none;visibility:visible}
+  .det .xs{display:flex}
 }
+.det .xs{display:none;justify-content:center;margin:-6px 0 8px}
+.det .xs i{width:40px;height:4px;border-radius:2px;background:var(--line2)}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
 </head>
@@ -582,7 +588,8 @@ function renderExp(){var A=ALL(),F=fac();var esc=A.filter(function(t){return t.s
  $('tb').innerHTML=L.length?L.map(function(t){var s=ST[t.st],pg=progOf(t);return '<tr class="ck'+(t.id===selId?' on':'')+'" data-id="'+t.id+'" tabindex="0"><td class="id">'+t.id+'</td><td class="nm">'+t.n+(t.man?'<span class="p-man">manual</span>':'')+'<small>'+t.tp+' · '+t.it+'</small></td><td class="r num">'+t.t+'/'+t.c+'</td><td><div class="prog"><small>'+(t.st==='dra'?'não iniciado':pg>=t.dias?'concluído':'dia '+pg+' de '+t.dias)+'</small><i><b style="width:'+(pg/t.dias*100)+'%"></b></i></div></td><td class="r"><span class="ci"><span class="num nw">'+(t.ef===null?'aguardando':sgn(t.ef,1,t.u))+'</span>'+ciBar(t)+'</span></td><td class="r num nw">'+pf(t.p)+'</td><td class="r num nw" style="color:'+(t.luc<0?COL.bad:COL.tx)+'">'+(t.luc===null?'–':mi(t.luc))+'</td><td><span class="pill '+s[1]+'">'+s[0]+'</span></td></tr>';}).join(''):'<tr><td colspan="8" class="empty">Nenhum teste com esse filtro.</td></tr>';
  $('mcards').innerHTML=L.map(function(t){var s=ST[t.st],pg=progOf(t);return '<button class="mc'+(t.id===selId?' on':'')+'" data-id="'+t.id+'"><div class="t1"><span>'+t.id+(t.man?' · manual':'')+'</span><span class="pill '+s[1]+'">'+s[0]+'</span></div><h4>'+t.n+'</h4><small>'+t.tp+' · '+t.it+'</small><div class="prog" style="width:100%;margin-top:8px"><small>'+(t.st==='dra'?'não iniciado':pg>=t.dias?'concluído':'dia '+pg+' de '+t.dias)+'</small><i><b style="width:'+(pg/t.dias*100)+'%"></b></i></div><div class="t3"><div>Efeito<b>'+(t.ef===null?'–':sgn(t.ef,1,t.u))+'</b></div><div>p<b>'+pf(t.p)+'</b></div><div>Lucro/ano<b>'+(t.luc===null?'–':mi(t.luc))+'</b></div></div></button>';}).join('')||'<div class="empty">Nenhum teste com esse filtro.</div>';
  if(!A.some(function(t){return t.id===selId;}))selId=A[0].id;showDet();renderGeral();}
-$('mcards').addEventListener('click',function(e){var b=e.target.closest('[data-id]');if(!b)return;selId=b.dataset.id;renderExp();$('det').scrollIntoView({behavior:'smooth',block:'start'});});
+$('mcards').addEventListener('click',function(e){var b=e.target.closest('[data-id]');if(!b)return;selId=b.dataset.id;renderExp();$('det').classList.add('open');$('ov').classList.add('on');});
+function closeSheet(){$('det').classList.remove('open');}
 $('tb').addEventListener('click',function(e){var tr=e.target.closest('tr[data-id]');if(!tr)return;selId=tr.dataset.id;renderExp();});
 $('tb').addEventListener('keydown',function(e){if(e.key==='Enter'){var tr=e.target.closest('tr[data-id]');if(tr){selId=tr.dataset.id;renderExp();}}});
 function setFiltro(v){filtro=v;$('fSt').querySelectorAll('button').forEach(function(x){x.setAttribute('aria-pressed',x.dataset.f===v);});}
@@ -600,7 +607,7 @@ function showDet(){var t=ALL().find(function(x){return x.id===selId;});var el=$(
  else acts='<button class="btn" data-a="dup">Duplicar teste</button>';
  if(t.man)acts+='<button class="btn" data-a="del" style="color:var(--bad)">Excluir</button>';
  var tiles=t.r?t.r.map(function(x){return '<div class="tile"><span>'+x[0]+'</span><b>'+x[1]+'</b></div>';}).join(''):'';
- el.innerHTML='<div class="top"><div><div class="sub">'+t.id+' · '+t.tp+'</div><h3 style="font-size:18px;margin-top:2px">'+t.n+'</h3></div><span class="pill '+s[1]+'">'+s[0]+'</span></div>'+
+ el.innerHTML='<div class="xs"><i></i></div><div class="top"><div><div class="sub">'+t.id+' · '+t.tp+'</div><h3 style="font-size:18px;margin-top:2px">'+t.n+'</h3></div><span class="pill '+s[1]+'">'+s[0]+'</span></div>'+
  '<dl class="kv"><dt>Item</dt><dd>'+t.it+'</dd>'+(t.px?'<dt>Preço</dt><dd class="num">'+t.px+'</dd>':'')+'<dt>Lojas</dt><dd class="num">'+t.t+' teste · '+t.c+' controle</dd><dt>Período</dt><dd class="num">'+dt(ini)+' a '+dt(fim)+'</dd>'+(t.d?'<dt>Decisão</dt><dd>'+t.d+'</dd>':'')+'</dl>'+
  (tiles?'<div class="tiles">'+tiles+'</div>':'')+'<div class="chartbox" style="height:170px;margin-top:12px"><canvas id="chDet"></canvas></div><div id="resForm"></div><div class="acts">'+acts+'</div>';
  if(detChart){detChart.destroy();detChart=null;}
@@ -630,9 +637,9 @@ $('btnCsv').addEventListener('click',function(){var L=rows();var lines=[['ID','E
 var NT={tipo:'preco'};
 $('nItem').innerHTML=Object.keys(IT).map(function(k){return '<option value="'+k+'">'+IT[k].n+' · '+IT[k].u+'</option>';}).join('');
 $('nPub').innerHTML+=SEGN.map(function(s,i){return '<option value="'+i+'">Só '+s.toLowerCase()+'</option>';}).join('');
-function openDrw(key,price,name){$('nItem').value=key||'presunto';var it=IT[$('nItem').value];$('nPreco').value=(price||it.def).toFixed(2);$('nNome').value=name||'';$('nNome').dataset.touched=name?'1':'';NT.tipo='preco';syncTipo();proj();
+function openDrw(key,price,name){closeSheet();$('nItem').value=key||'presunto';var it=IT[$('nItem').value];$('nPreco').value=(price||it.def).toFixed(2);$('nNome').value=name||'';$('nNome').dataset.touched=name?'1':'';NT.tipo='preco';syncTipo();proj();
  $('ov').classList.add('on');$('drw').classList.add('on');$('drw').setAttribute('aria-hidden','false');setTimeout(function(){$('nPreco').focus();},260);}
-function closeDrw(){$('ov').classList.remove('on');$('drw').classList.remove('on');$('drw').setAttribute('aria-hidden','true');}
+function closeDrw(){closeSheet();$('ov').classList.remove('on');$('drw').classList.remove('on');$('drw').setAttribute('aria-hidden','true');}
 $('btnNovo').addEventListener('click',function(){openDrw(cur==='item'?curIt:'presunto',cur==='item'?curP:null);});
 $('drwX').addEventListener('click',closeDrw);$('ov').addEventListener('click',closeDrw);
 document.addEventListener('keydown',function(e){if(e.key==='Escape')closeDrw();});
