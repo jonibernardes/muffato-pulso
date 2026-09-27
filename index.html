@@ -1,0 +1,703 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Muffato Pulso</title>
+<meta name="description" content="Laboratório de preço e comportamento do consumidor do Super Muffato. Protótipo com dados simulados.">
+<meta name="robots" content="noindex, nofollow">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,700;12..96,800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+:root{
+  color-scheme: dark;
+  --bg:#080B12; --bg2:#0C1019; --panel:#111624; --panel2:#161C2D; --line:#1F2638; --line2:#2A3349;
+  --tx:#EAEEF6; --tx2:#A2ACC2; --tx3:#66708A;
+  --blue:#2F7BFF; --blue2:#6FA3FF; --blueDeep:#004A98;
+  --amber:#FFB23F; --teal:#2FD3B5; --coral:#FF6F61; --violet:#A58BFF;
+  --good:#3DDC97; --warn:#F6C453; --bad:#FF5D6C;
+  --r:14px;
+  --fd:'Bricolage Grotesque', 'Segoe UI', system-ui, sans-serif;
+  --fb:'IBM Plex Sans', 'Segoe UI', system-ui, sans-serif;
+  --fm:'IBM Plex Mono', ui-monospace, 'Cascadia Mono', Consolas, monospace;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--tx);font:14px/1.5 var(--fb);-webkit-font-smoothing:antialiased;min-height:100vh;
+  background-image:radial-gradient(1200px 520px at 12% -10%, rgba(47,123,255,.16), transparent 60%),radial-gradient(900px 480px at 100% 0%, rgba(255,178,63,.07), transparent 60%);background-attachment:fixed}
+.wrap{max-width:1360px;margin:0 auto;padding-inline:clamp(16px,3vw,32px);padding-block:0 48px}
+.num,.mono{font-family:var(--fm);font-variant-numeric:tabular-nums}
+a{color:var(--blue2)}
+button{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--blue2);outline-offset:2px;border-radius:6px}
+
+/* topo */
+.top{position:sticky;top:0;z-index:20;background:rgba(8,11,18,.82);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-bottom:1px solid var(--line)}
+.topin{max-width:1360px;margin:0 auto;padding:12px clamp(16px,3vw,32px);display:flex;align-items:center;gap:18px;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:12px;min-width:0}
+.mark{width:38px;height:38px;border-radius:10px;background:linear-gradient(135deg,var(--blueDeep),var(--blue));display:grid;place-items:center;box-shadow:0 0 0 1px rgba(255,255,255,.08) inset,0 8px 24px -8px rgba(47,123,255,.7)}
+.mark svg{width:22px;height:22px}
+.brand b{font:700 17px/1.1 var(--fd);letter-spacing:-.01em;display:block}
+.brand small{color:var(--tx3);font-size:12px;display:block}
+.tabs{display:flex;gap:4px;flex-wrap:wrap;margin-left:auto}
+.tab{background:transparent;border:1px solid transparent;color:var(--tx2);padding:7px 12px;border-radius:9px;cursor:pointer;font-weight:500;font-size:13px}
+.tab:hover{color:var(--tx);background:var(--panel)}
+.tab[aria-selected="true"]{color:var(--tx);background:var(--panel2);border-color:var(--line2)}
+.live{display:flex;align-items:center;gap:8px;font:500 12px var(--fm);color:var(--tx2);border:1px solid var(--line);padding:6px 10px;border-radius:99px;background:var(--bg2)}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--good);box-shadow:0 0 0 0 rgba(61,220,151,.6);animation:pulse 1.8s infinite}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(61,220,151,.55)}70%{box-shadow:0 0 0 9px rgba(61,220,151,0)}100%{box-shadow:0 0 0 0 rgba(61,220,151,0)}}
+.proto{font:500 11px var(--fm);letter-spacing:.06em;text-transform:uppercase;color:var(--amber);border:1px dashed rgba(255,178,63,.45);padding:4px 8px;border-radius:6px}
+
+/* comum */
+section.view{display:none;padding-top:26px}
+section.view.on{display:block;animation:fade .35s ease}
+@keyframes fade{from{opacity:.4;transform:translateY(4px)}to{opacity:1;transform:none}}
+.eyebrow{font:500 11px var(--fm);letter-spacing:.12em;text-transform:uppercase;color:var(--tx3)}
+h1,h2,h3{font-family:var(--fd);margin:0;text-wrap:balance;letter-spacing:-.015em}
+h2{font-size:clamp(22px,2.4vw,30px);font-weight:700}
+h3{font-size:16px;font-weight:600}
+.lead{color:var(--tx2);max-width:72ch;margin:8px 0 0}
+.head{display:flex;justify-content:space-between;align-items:end;gap:16px;flex-wrap:wrap;margin-bottom:18px}
+.card{background:linear-gradient(180deg,var(--panel),var(--bg2));border:1px solid var(--line);border-radius:var(--r);padding:18px}
+.card .ch{display:flex;justify-content:space-between;align-items:baseline;gap:10px;margin-bottom:12px;flex-wrap:wrap}
+.card .ch p{margin:0;color:var(--tx3);font-size:12px}
+.grid{display:grid;gap:16px}
+.g-hero{grid-template-columns:1.35fr 1fr}
+.g-4{grid-template-columns:repeat(4,1fr)}
+.g-main{grid-template-columns:1.7fr 1fr}
+.g-2{grid-template-columns:1fr 1fr}
+.g-3{grid-template-columns:repeat(3,1fr)}
+@media (max-width:1080px){.g-hero,.g-main,.g-2{grid-template-columns:1fr}.g-4{grid-template-columns:1fr 1fr}.g-3{grid-template-columns:1fr 1fr}}
+@media (max-width:640px){.g-4,.g-3{grid-template-columns:1fr}.tabs{margin-left:0;width:100%}.live{display:none}}
+
+/* hero */
+.hero{position:relative;overflow:hidden;padding:26px 26px 22px}
+.hero canvas.bgnet{position:absolute;inset:0;width:100%;height:100%;opacity:.55;pointer-events:none}
+.hero > *:not(canvas){position:relative}
+.big{font:800 clamp(52px,7.4vw,96px)/.92 var(--fd);letter-spacing:-.04em;margin:14px 0 6px;background:linear-gradient(180deg,#fff 30%,#9DBBFF);-webkit-background-clip:text;background-clip:text;color:transparent}
+.big small{font-size:.38em;letter-spacing:-.01em;color:var(--tx2);-webkit-text-fill-color:var(--tx2);margin-left:6px}
+.herosub{color:var(--tx2);max-width:56ch}
+.herosub b{color:var(--tx)}
+.chips{display:flex;gap:8px;flex-wrap:wrap;margin-top:16px}
+.chip{font:500 12px var(--fm);padding:5px 9px;border-radius:7px;background:rgba(255,255,255,.04);border:1px solid var(--line2);color:var(--tx2)}
+.chip b{color:var(--tx);font-weight:600}
+.up{color:var(--good)} .down{color:var(--bad)}
+
+.stream{display:flex;flex-direction:column}
+.counter{font:600 clamp(30px,3.4vw,42px)/1 var(--fm);letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+.bars{display:flex;align-items:end;gap:3px;height:54px;margin:14px 0 10px}
+.bars i{flex:1;background:linear-gradient(180deg,var(--blue2),rgba(47,123,255,.25));border-radius:2px 2px 0 0;min-height:3px;transition:height .5s ease}
+.mini{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;border-top:1px solid var(--line);padding-top:12px}
+.mini div span{display:block;color:var(--tx3);font-size:11px}
+.mini div b{font:600 15px var(--fm)}
+
+.kpi{padding:16px 18px}
+.kpi .v{font:600 26px/1.1 var(--fm);margin-top:8px;font-variant-numeric:tabular-nums}
+.kpi .d{font-size:12px;margin-top:4px;color:var(--tx3)}
+.kpi .d b{font-weight:600}
+.spark{height:34px;margin-top:10px;width:100%}
+
+.feed{height:318px;overflow:hidden;position:relative;mask-image:linear-gradient(180deg,#000 75%,transparent)}
+.ev{display:grid;grid-template-columns:62px 1fr auto;gap:10px;align-items:center;padding:9px 0;border-bottom:1px solid var(--line);font-size:12.5px;animation:slide .45s ease}
+@keyframes slide{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:none}}
+.ev time{font:500 11px var(--fm);color:var(--tx3)}
+.ev .w{min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--tx2)}
+.ev .w b{color:var(--tx);font-weight:500}
+.tag{font:600 10.5px var(--fm);letter-spacing:.04em;padding:3px 7px;border-radius:5px;white-space:nowrap}
+.t-blue{background:rgba(47,123,255,.14);color:var(--blue2)}
+.t-amber{background:rgba(255,178,63,.13);color:var(--amber)}
+.t-teal{background:rgba(47,211,181,.12);color:var(--teal)}
+.t-coral{background:rgba(255,111,97,.13);color:var(--coral)}
+.t-violet{background:rgba(165,139,255,.13);color:var(--violet)}
+
+.lever{display:grid;grid-template-columns:minmax(140px,210px) 1fr 86px;gap:12px;align-items:center;padding:8px 0}
+.lever span{color:var(--tx2);font-size:13px}
+.lever .track{height:10px;background:var(--line);border-radius:99px;overflow:hidden}
+.lever .fill{height:100%;border-radius:99px}
+.lever b{font:600 13px var(--fm);text-align:right}
+@media (max-width:640px){.lever{grid-template-columns:1fr 70px}.lever .track{grid-column:1/-1;order:3}}
+
+/* experimentos */
+.filters{display:flex;gap:6px;flex-wrap:wrap}
+.fbtn{border:1px solid var(--line2);background:var(--bg2);color:var(--tx2);padding:6px 11px;border-radius:99px;font-size:12.5px;cursor:pointer}
+.fbtn[aria-pressed="true"]{background:var(--tx);color:var(--bg);border-color:var(--tx)}
+.tblwrap{overflow-x:auto;border:1px solid var(--line);border-radius:var(--r);background:var(--bg2)}
+table{border-collapse:collapse;width:100%;min-width:920px}
+th{font:500 11px var(--fm);letter-spacing:.08em;text-transform:uppercase;color:var(--tx3);text-align:left;padding:12px 14px;border-bottom:1px solid var(--line);background:var(--panel)}
+td{padding:12px 14px;border-bottom:1px solid var(--line);vertical-align:middle}
+tbody tr{cursor:pointer;transition:background .15s}
+tbody tr:hover{background:rgba(255,255,255,.025)}
+tbody tr.sel{background:rgba(47,123,255,.08);box-shadow:inset 3px 0 0 var(--blue)}
+td.r,th.r{text-align:right}
+.eid{font:600 12px var(--fm);color:var(--tx3)}
+.ename{font-weight:500}
+.ename small{display:block;color:var(--tx3);font-size:12px;font-weight:400}
+.pill{display:inline-flex;align-items:center;gap:6px;font:600 11px var(--fm);padding:4px 9px;border-radius:99px;white-space:nowrap}
+.pill::before{content:"";width:6px;height:6px;border-radius:50%;background:currentColor}
+.p-esc{color:var(--good);background:rgba(61,220,151,.1)}
+.p-run{color:var(--blue2);background:rgba(47,123,255,.12)}
+.p-inc{color:var(--warn);background:rgba(246,196,83,.1)}
+.p-rej{color:var(--bad);background:rgba(255,93,108,.1)}
+.ci{display:flex;align-items:center;gap:8px;justify-content:flex-end}
+.cibar{position:relative;width:90px;height:8px}
+.cibar::before{content:"";position:absolute;left:50%;top:-3px;bottom:-3px;width:1px;background:var(--line2)}
+.cibar i{position:absolute;top:2px;height:4px;border-radius:2px}
+.cibar em{position:absolute;top:0;width:8px;height:8px;border-radius:50%;margin-left:-4px;background:#fff}
+
+.detail{margin-top:16px}
+.dgrid{display:grid;grid-template-columns:1fr 1.25fr;gap:22px}
+@media (max-width:1080px){.dgrid{grid-template-columns:1fr}}
+.dl{display:grid;grid-template-columns:130px 1fr;gap:8px 14px;margin:14px 0 0;font-size:13px}
+.dl dt{color:var(--tx3)} .dl dd{margin:0}
+.resrow{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:16px}
+.res{border:1px solid var(--line);border-radius:10px;padding:12px;background:rgba(255,255,255,.02)}
+.res span{font-size:11px;color:var(--tx3);display:block}
+.res b{font:600 20px var(--fm);display:block;margin-top:4px}
+.decision{margin-top:14px;padding:12px 14px;border-radius:10px;border:1px solid var(--line2);background:rgba(47,123,255,.06);font-size:13.5px}
+.decision b{font-family:var(--fd)}
+
+/* comportamento */
+.heat{display:grid;grid-template-columns:38px repeat(16,1fr);gap:3px;font:500 10.5px var(--fm);color:var(--tx3)}
+.heat .c{aspect-ratio:1.35;border-radius:4px;position:relative}
+.heat .c:hover{outline:1px solid #fff;z-index:2}
+.heat .lab{display:flex;align-items:center}
+.heat .hl{text-align:center}
+.legend{display:flex;align-items:center;gap:8px;font:500 11px var(--fm);color:var(--tx3);margin-top:12px}
+.legend i{display:block;width:120px;height:8px;border-radius:99px;background:linear-gradient(90deg,#121a2e,#1d3a78,#2F7BFF,#FFB23F)}
+.seg{padding:16px}
+.seg .sh{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.seg .share{font:700 28px var(--fd);letter-spacing:-.02em}
+.seg p{color:var(--tx2);font-size:13px;margin:6px 0 12px}
+.seg dl{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin:0;border-top:1px solid var(--line);padding-top:10px}
+.seg dl dt{font-size:10.5px;color:var(--tx3)} .seg dl dd{margin:0;font:600 13px var(--fm)}
+.seg .resp{margin-top:10px;font-size:12px;color:var(--tx3)}
+.seg .resp b{color:var(--tx);font-weight:500}
+.insight{border-left:2px solid var(--amber);padding:6px 0 6px 12px;color:var(--tx2);font-size:13px;margin-top:12px}
+.insight b{color:var(--tx)}
+
+/* simulador */
+.sim{display:grid;grid-template-columns:380px 1fr;gap:16px}
+@media (max-width:1080px){.sim{grid-template-columns:1fr}}
+.ctl{margin-bottom:20px}
+.ctl label{display:flex;justify-content:space-between;gap:10px;font-weight:500;font-size:13.5px}
+.ctl label output{font:600 14px var(--fm);color:var(--amber)}
+.ctl small{display:block;color:var(--tx3);font-size:12px;margin-top:2px}
+input[type=range]{width:100%;margin-top:10px;accent-color:var(--blue);height:24px}
+.outbig{font:800 clamp(40px,5vw,64px)/1 var(--fd);letter-spacing:-.03em;margin:8px 0}
+.cmp{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:14px}
+@media (max-width:640px){.cmp{grid-template-columns:1fr 1fr}}
+.cmp div{border:1px solid var(--line);border-radius:10px;padding:10px 12px}
+.cmp span{font-size:11px;color:var(--tx3);display:block}
+.cmp b{font:600 17px var(--fm)}
+.reset{border:1px solid var(--line2);background:transparent;color:var(--tx2);padding:7px 12px;border-radius:8px;cursor:pointer;font-size:12.5px}
+.reset:hover{color:var(--tx);border-color:var(--tx3)}
+
+/* mercado */
+.mech{display:grid;grid-template-columns:1fr;gap:0;padding:0;overflow:hidden}
+.mrow{display:grid;grid-template-columns:1.1fr 1fr 1fr 110px;gap:18px;padding:18px;border-bottom:1px solid var(--line)}
+.mrow:last-child{border-bottom:0}
+.mrow.hd{padding-block:12px;background:var(--panel)}
+.mrow.hd div{font:500 11px var(--fm);letter-spacing:.08em;text-transform:uppercase;color:var(--tx3)}
+.mrow h3{font-size:15px}
+.mrow p{margin:6px 0 0;color:var(--tx2);font-size:13px}
+.mrow .src{font-size:11.5px;margin-top:8px;display:inline-block;color:var(--tx3)}
+.mrow .src a{color:var(--tx3)}
+.mrow .lnk{font:600 12px var(--fm);color:var(--blue2);background:rgba(47,123,255,.1);border:0;padding:5px 9px;border-radius:6px;cursor:pointer;height:max-content}
+@media (max-width:900px){.mrow{grid-template-columns:1fr}.mrow.hd{display:none}}
+.facts{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:16px}
+@media (max-width:900px){.facts{grid-template-columns:1fr 1fr}}
+.fact .v{font:700 30px var(--fd);letter-spacing:-.02em;margin-top:6px}
+.fact p{margin:4px 0 0;color:var(--tx3);font-size:12px}
+
+.chartbox{position:relative;width:100%}
+.foot{margin-top:36px;padding-top:18px;border-top:1px solid var(--line);color:var(--tx3);font-size:12px;display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="topin">
+    <div class="brand">
+      <div class="mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round"><path d="M3 17l5-6 4 3 5-8 4 5"/><circle cx="8" cy="11" r="1.2" fill="#fff"/><circle cx="12" cy="14" r="1.2" fill="#fff"/><circle cx="17" cy="6" r="1.2" fill="#fff"/></svg></div>
+      <div><b>Muffato Pulso</b><small>Super Muffato · Laboratório de preço e comportamento</small></div>
+    </div>
+    <span class="proto" title="Protótipo de demonstração. Os números são simulados.">Protótipo · dados simulados</span>
+    <nav class="tabs" role="tablist" aria-label="Seções">
+      <button class="tab" role="tab" aria-selected="true" data-v="geral" id="tab-geral">Visão geral</button>
+      <button class="tab" role="tab" aria-selected="false" data-v="exp" id="tab-exp">Experimentos</button>
+      <button class="tab" role="tab" aria-selected="false" data-v="comp" id="tab-comp">Comportamento</button>
+      <button class="tab" role="tab" aria-selected="false" data-v="sim" id="tab-sim">Simulador</button>
+      <button class="tab" role="tab" aria-selected="false" data-v="merc" id="tab-merc">Lógica das promoções</button>
+    </nav>
+    <span class="live"><span class="dot"></span><span id="clock">--:--:--</span> · lag 4s</span>
+  </div>
+</header>
+
+<main class="wrap">
+
+<!-- ============ VISÃO GERAL ============ -->
+<section class="view on" id="v-geral" role="tabpanel" aria-labelledby="tab-geral">
+  <div class="grid g-hero">
+    <div class="card hero">
+      <canvas class="bgnet" id="bgnet" aria-hidden="true"></canvas>
+      <div class="eyebrow">Lucro incremental anualizado · testes já escalados</div>
+      <div class="big num" id="heroNum">R$ 0<small>mi/ano</small></div>
+      <p class="herosub">Soma dos ganhos medidos contra grupo controle em <b>54 lojas Super Muffato</b>, sobre <b>R$ 12,6 bi</b> de venda bruta na base do modelo. Equivale a <b id="heroPP">+0,00 p.p.</b> de margem líquida.</p>
+      <div class="chips">
+        <span class="chip">Testes escalados <b id="cEsc">0</b></span>
+        <span class="chip">Rodando agora <b id="cRun">0</b></span>
+        <span class="chip">Cupons analisados <b>412,8 mi</b></span>
+        <span class="chip">CPFs no ClubeFato <b>4,31 mi</b></span>
+      </div>
+    </div>
+    <div class="card stream">
+      <div class="ch"><h3>Eventos processados hoje</h3><p>cupom, app, pin pad, e-commerce</p></div>
+      <div class="counter" id="evCount">0</div>
+      <div class="bars" id="evBars" aria-hidden="true"></div>
+      <div class="mini">
+        <div><span>Cupons hoje</span><b class="num" id="cupHoje">0</b></div>
+        <div><span>Com CPF</span><b class="num" id="cpfPct">78,4%</b></div>
+        <div><span>Selos emitidos</span><b class="num" id="selHoje">0</b></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid g-4" style="margin-top:16px">
+    <div class="card kpi"><div class="eyebrow">Ticket médio</div><div class="v">R$ 118,40</div><div class="d"><b class="up">+3,1%</b> vs. mesmo período 2025</div><canvas class="spark" data-s="up"></canvas></div>
+    <div class="card kpi"><div class="eyebrow">Identificação por CPF</div><div class="v">78,4%</div><div class="d"><b class="up">+17,2 p.p.</b> desde o preço exclusivo</div><canvas class="spark" data-s="step"></canvas></div>
+    <div class="card kpi"><div class="eyebrow">Pagamento com Crediffato</div><div class="v">18,9%</div><div class="d"><b class="up">+4,7 p.p.</b> com o selo adicional</div><canvas class="spark" data-s="up2"></canvas></div>
+    <div class="card kpi"><div class="eyebrow">Quebra em perecíveis</div><div class="v">2,84%</div><div class="d"><b class="up">-1,05 p.p.</b> com remarcação das 18h</div><canvas class="spark" data-s="down"></canvas></div>
+  </div>
+
+  <div class="grid g-main" style="margin-top:16px">
+    <div class="card">
+      <div class="ch"><h3>Lucro incremental por alavanca, semana a semana</h3><p>R$ mil por semana · 26 semanas</p></div>
+      <div class="chartbox" style="height:318px"><canvas id="chArea"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="ch"><h3>Fluxo ao vivo</h3><p>amostra de 1 a cada 5 mil eventos</p></div>
+      <div class="feed" id="feed"></div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top:16px">
+    <div class="ch"><h3>Quanto cada alavanca devolve por ano</h3><p>testes escalados, R$ mi/ano</p></div>
+    <div id="levers"></div>
+  </div>
+</section>
+
+<!-- ============ EXPERIMENTOS ============ -->
+<section class="view" id="v-exp" role="tabpanel" aria-labelledby="tab-exp">
+  <div class="head">
+    <div><div class="eyebrow">Testes A/B por loja pareada</div><h2>Experimentos de preço e comportamento</h2>
+    <p class="lead">Cada teste separa lojas parecidas em grupo teste e grupo controle (mesmo porte, cidade, perfil de cesta). O lucro é medido contra o controle, não contra o ano passado.</p></div>
+    <div class="filters" id="filters">
+      <button class="fbtn" aria-pressed="true" data-f="all">Todos</button>
+      <button class="fbtn" aria-pressed="false" data-f="esc">Escalar</button>
+      <button class="fbtn" aria-pressed="false" data-f="run">Rodando</button>
+      <button class="fbtn" aria-pressed="false" data-f="inc">Inconclusivo</button>
+      <button class="fbtn" aria-pressed="false" data-f="rej">Rejeitado</button>
+    </div>
+  </div>
+  <div class="tblwrap">
+    <table>
+      <thead><tr><th>ID</th><th>Experimento</th><th>Alavanca</th><th>Lojas T/C</th><th class="r">Efeito (IC 95%)</th><th class="r">p</th><th class="r">Lucro/ano</th><th>Status</th></tr></thead>
+      <tbody id="tbody"></tbody>
+    </table>
+  </div>
+  <div class="card detail" id="detail"></div>
+</section>
+
+<!-- ============ COMPORTAMENTO ============ -->
+<section class="view" id="v-comp" role="tabpanel" aria-labelledby="tab-comp">
+  <div class="head"><div><div class="eyebrow">O que o cupom fiscal conta</div><h2>Comportamento do consumidor</h2>
+  <p class="lead">Leitura de 412,8 milhões de cupons dos últimos 24 meses, cruzados com cadastro ClubeFato, app e meio de pagamento.</p></div></div>
+
+  <div class="grid g-2">
+    <div class="card">
+      <div class="ch"><h3>Fluxo de clientes por dia e hora</h3><p>índice 0 a 100 · todas as lojas</p></div>
+      <div style="overflow-x:auto"><div class="heat" id="heat" style="min-width:520px"></div></div>
+      <div class="legend">baixo <i></i> pico</div>
+      <div class="insight">Terça e quarta de manhã sobem <b>+38%</b> acima da média do dia útil. É o efeito da feira de hortifruti puxando cliente num dia que seria fraco.</div>
+    </div>
+    <div class="card">
+      <div class="ch"><h3>Onde o cupom para</h3><p>distribuição do valor do cupom · faixas de R$ 3</p></div>
+      <div class="chartbox" style="height:280px"><canvas id="chHist"></canvas></div>
+      <div class="insight">Os cupons se amontoam <b>logo acima de R$ 30, 60, 90 e 120</b>, os degraus do selo. <b>21,7%</b> dos clientes com CPF completam a compra para ganhar o selo seguinte.</div>
+    </div>
+  </div>
+
+  <div class="grid g-2" style="margin-top:16px">
+    <div class="card">
+      <div class="ch"><h3>Elasticidade-preço por categoria</h3><p>quanto o volume muda para cada 1% de desconto</p></div>
+      <div class="chartbox" style="height:330px"><canvas id="chElast"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="ch"><h3>Efeito halo do Dia de Feira</h3><p>R$ gastos fora do hortifruti por R$ 1 de desconto dado</p></div>
+      <div class="chartbox" style="height:330px"><canvas id="chHalo"></canvas></div>
+    </div>
+  </div>
+
+  <div class="head" style="margin-top:28px"><div><div class="eyebrow">Agrupamento k-means · 4,31 mi CPFs · 38 variáveis</div><h2>Os 7 tipos de cliente</h2></div></div>
+  <div class="grid g-3" id="segs"></div>
+</section>
+
+<!-- ============ SIMULADOR ============ -->
+<section class="view" id="v-sim" role="tabpanel" aria-labelledby="tab-sim">
+  <div class="head"><div><div class="eyebrow">Modelo de resposta calibrado nos experimentos</div><h2>Simulador de política promocional</h2>
+  <p class="lead">Mexa nas alavancas e veja o lucro anual projetado contra a política praticada hoje. As curvas vêm dos testes VX-412, VX-418, VX-425 e VX-421.</p></div>
+  <button class="reset" id="simReset">Voltar para a política atual</button></div>
+  <div class="sim">
+    <div class="card">
+      <div class="ctl"><label for="sFeira">Desconto no Dia de Feira <output id="oFeira">50%</output></label><small>Hortifruti, terça e quarta. Hoje: até 50%</small><input type="range" id="sFeira" min="15" max="60" step="1" value="50"></div>
+      <div class="ctl"><label for="sSelo">Valor por selo <output id="oSelo">R$ 30</output></label><small>Selinhos de Descontos Incríveis. Hoje: 1 selo a cada R$ 30</small><input type="range" id="sSelo" min="20" max="50" step="1" value="30"></div>
+      <div class="ctl"><label for="sCard">Selo adicional Crediffato a cada <output id="oCard">R$ 60</output></label><small>Compra paga só com o cartão. Hoje: R$ 60</small><input type="range" id="sCard" min="40" max="120" step="5" value="60"></div>
+      <div class="ctl"><label for="sTrade">Verba de marca nos aceleradores <output id="oTrade">70%</output></label><small>Parte do custo do selo extra que a indústria paga</small><input type="range" id="sTrade" min="0" max="100" step="5" value="70"></div>
+    </div>
+    <div class="card">
+      <div class="eyebrow">Diferença de lucro contra a política atual</div>
+      <div class="outbig num" id="simOut">R$ 0,0 mi</div>
+      <div style="color:var(--tx2);font-size:13px" id="simTxt">Mesma política praticada hoje.</div>
+      <div class="cmp">
+        <div><span>Fluxo de clientes</span><b id="mFluxo">0,0%</b></div>
+        <div><span>Ticket médio</span><b id="mTicket">0,0%</b></div>
+        <div><span>Margem hortifruti</span><b id="mMarg">0,0 p.p.</b></div>
+        <div><span>Custo dos selos</span><b id="mSelo">R$ 0,0 mi</b></div>
+      </div>
+      <div class="chartbox" style="height:280px;margin-top:18px"><canvas id="chSim"></canvas></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ LÓGICA ============ -->
+<section class="view" id="v-merc" role="tabpanel" aria-labelledby="tab-merc">
+  <div class="head"><div><div class="eyebrow">Levantamento feito em 26/09/2026 em fontes públicas</div><h2>A lógica por trás das promoções do Super Muffato</h2>
+  <p class="lead">Cada mecânica abaixo foi observada no site, no folheto ou no regulamento. A coluna do meio é a nossa leitura do porquê ela existe. A da direita diz onde os dados entram.</p></div></div>
+
+  <div class="facts">
+    <div class="card fact"><div class="eyebrow">Faturamento 2025</div><div class="v">R$ 20,3 bi</div><p>Grupo Muffato, ranking ABRAS, +16,7% sobre 2024</p></div>
+    <div class="card fact"><div class="eyebrow">Posição nacional</div><div class="v">6ª rede</div><p>líder isolada no Paraná</p></div>
+    <div class="card fact"><div class="eyebrow">Lojas Super Muffato</div><div class="v">54</div><p>mais 33 Max Atacadista, PR e interior de SP</p></div>
+    <div class="card fact"><div class="eyebrow">Campanha de selos ativa</div><div class="v">21/09 a 10/01</div><p>panelas MasterChef, 3 ondas de aceleradores</p></div>
+  </div>
+
+  <div class="card mech" id="mech"></div>
+
+  <div class="card" style="margin-top:16px">
+    <h3>Fontes</h3>
+    <ul style="color:var(--tx2);font-size:13px;margin:10px 0 0;padding-left:18px;line-height:1.9">
+      <li><a href="https://selinhosdedescontosincriveis.supermuffato.com.br/" target="_blank" rel="noopener">Regulamento Selinhos de Descontos Incríveis</a></li>
+      <li><a href="https://www.supermuffato.com.br/ofertas" target="_blank" rel="noopener">Página de ofertas do Super Muffato Delivery</a></li>
+      <li><a href="https://www.portafolhetos.com.br/super-muffato/super-muffato-ofertas-da-semana-de-quinta-feira-17-09-2026-454717/" target="_blank" rel="noopener">Folheto Ofertas da Semana, 17/09 a 27/09/2026</a></li>
+      <li><a href="https://www.gazetadopovo.com.br/curitiba/quais-os-melhores-dias-para-comprar-frutas-verduras-e-legumes-nos-mercados-de-curitiba-c9z242uzbq3s6leuu6130nso7/" target="_blank" rel="noopener">Gazeta do Povo, dias de feira nos mercados de Curitiba</a></li>
+      <li><a href="https://taroba.com.br/noticias/parana/grupo-muffato-fatura-r-20-3-bilhoes-e-isola-se-na-lideranca-absoluta-do-parana" target="_blank" rel="noopener">Tarobá, faturamento 2025 do Grupo Muffato</a></li>
+      <li><a href="https://pt.wikipedia.org/wiki/Super_Muffato" target="_blank" rel="noopener">Wikipédia, Super Muffato</a></li>
+    </ul>
+  </div>
+</section>
+
+<footer class="foot">
+  <span>Muffato Pulso · protótipo desenvolvido pela Academia Apps</span>
+  <span>As mecânicas promocionais são públicas. Resultados, testes e indicadores internos são simulados para demonstração.</span>
+</footer>
+</main>
+
+<script>
+(function(){
+"use strict";
+/* ---------- utilidades ---------- */
+function rng(seed){return function(){seed|=0;seed=seed+0x6D2B79F5|0;var t=Math.imul(seed^seed>>>15,1|seed);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;}}
+var R=rng(20260926);
+function gauss(r){var u=0,v=0;while(!u)u=r();while(!v)v=r();return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v);}
+var nf=function(d){return new Intl.NumberFormat('pt-BR',{minimumFractionDigits:d,maximumFractionDigits:d});};
+function f(v,d){return nf(d||0).format(v);}
+function brlMi(v){return (v<0?'-':'')+'R$ '+f(Math.abs(v),1)+' mi';}
+function sgn(v,d,suf){return (v>0?'+':v<0?'-':'')+f(Math.abs(v),d)+(suf||'');}
+var css=getComputedStyle(document.documentElement);
+function C(n){return css.getPropertyValue(n).trim();}
+var COL={blue:C('--blue'),blue2:C('--blue2'),amber:C('--amber'),teal:C('--teal'),coral:C('--coral'),violet:C('--violet'),good:C('--good'),bad:C('--bad'),warn:C('--warn'),tx:C('--tx'),tx2:C('--tx2'),tx3:C('--tx3'),line:C('--line')};
+function alpha(hex,a){var h=hex.replace('#','');var n=parseInt(h,16);return 'rgba('+(n>>16&255)+','+(n>>8&255)+','+(n&255)+','+a+')';}
+var reduce=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+var hasChart=typeof window.Chart!=='undefined';
+if(hasChart){
+  Chart.defaults.color=COL.tx3;Chart.defaults.borderColor=COL.line;
+  Chart.defaults.font.family="'IBM Plex Mono', ui-monospace, monospace";Chart.defaults.font.size=11;
+  Chart.defaults.plugins.legend.labels.boxWidth=10;Chart.defaults.plugins.legend.labels.boxHeight=10;
+  Chart.defaults.plugins.tooltip.backgroundColor='#0C1019';Chart.defaults.plugins.tooltip.borderColor='#2A3349';Chart.defaults.plugins.tooltip.borderWidth=1;
+  Chart.defaults.plugins.tooltip.titleColor=COL.tx;Chart.defaults.plugins.tooltip.bodyColor=COL.tx2;Chart.defaults.plugins.tooltip.padding=10;
+  Chart.defaults.maintainAspectRatio=false;
+}
+
+/* ---------- experimentos ---------- */
+var LEV={
+  pere:{n:'Perecíveis e Dia de Feira',c:COL.teal},
+  selo:{n:'Programa de selos',c:COL.amber},
+  clube:{n:'ClubeFato e CPF',c:COL.blue2},
+  cart:{n:'Cartão Crediffato',c:COL.violet},
+  trade:{n:'Verba de marca e aceleradores',c:COL.coral},
+  preco:{n:'Formato de preço',c:'#8FA0BF'}
+};
+var T=[
+ {id:'VX-412',n:'Profundidade do Dia de Feira',s:'Hortifruti terça e quarta: até 50% contra até 35%',lev:'pere',t:14,c:14,dias:56,m:'Margem bruta hortifruti',ef:11.4,lo:8.9,hi:13.9,u:' p.p.',p:0.004,luc:3.1,st:'esc',
+  h:'Descontar 35% em vez de 50% nos itens de feira preserva quase todo o fluxo de terça e quarta e devolve margem na categoria.',
+  r:[['Fluxo de clientes','-0,8%','sem diferença estatística'],['Volume hortifruti','-6,3%','queda esperada'],['Margem hortifruti','+11,4 p.p.','ganho principal']],
+  d:'Escalar para as 54 lojas com 35% como teto. Manter 50% em 6 itens de vitrine (banana, tomate, batata, cebola, laranja, alface), que são os que o cliente compara.'},
+ {id:'VX-418',n:'Degrau do selo de R$ 30 para R$ 35',s:'Selinhos: 1 selo a cada R$ 30 contra R$ 35',lev:'selo',t:12,c:12,dias:42,m:'Lucro por cupom',ef:4.2,lo:2.6,hi:5.8,u:'%',p:0.0007,luc:4.1,st:'esc',
+  h:'Subir o degrau do selo reduz o custo de resgate mais do que reduz o esforço de completar a compra.',
+  r:[['Ticket médio','+R$ 2,11','completam até R$ 35'],['Selos emitidos','-13,8%','custo menor'],['Adesão à cartela','-2,1 p.p.','perda aceitável']],
+  d:'Aplicar R$ 35 na próxima campanha. Não mudar no meio da atual: o regulamento fixa R$ 30 até 10/01.'},
+ {id:'VX-421',n:'Selo extra em produto acelerador',s:'Marca parceira dá 1 selo adicional por grupo de itens',lev:'trade',t:18,c:18,dias:35,m:'Sell-out da marca',ef:38.2,lo:29.5,hi:46.9,u:'%',p:0.0001,luc:3.9,st:'esc',
+  h:'Quando a indústria paga o selo extra, o varejo ganha fluxo na gôndola da marca sem tirar da própria margem.',
+  r:[['Sell-out das marcas','+38,2%','nos itens da onda'],['Verba recebida','R$ 2,1 mi','cobre 100% dos selos extras'],['Canibalização','-6,4%','nas marcas concorrentes']],
+  d:'Escalar e vender as 3 ondas como mídia de varejo, com relatório de resultado para cada marca.'},
+ {id:'VX-425',n:'Selo adicional no Crediffato',s:'+1 selo a cada R$ 60 pagos só com o cartão',lev:'cart',t:10,c:10,dias:49,m:'Participação do cartão',ef:4.7,lo:3.3,hi:6.1,u:' p.p.',p:0.0003,luc:5.4,st:'esc',
+  h:'Um selo extra é o incentivo mais barato para mudar o meio de pagamento, que tem taxa menor e gera receita financeira.',
+  r:[['Pagamento com cartão próprio','14,2% → 18,9%','no grupo teste'],['Economia de taxa','R$ 1,8 mi/ano','contra cartão de terceiros'],['Receita financeira','R$ 4,3 mi/ano','parcelamento e fatura']],
+  d:'Escalar. Testar R$ 70 como degrau na próxima rodada: o modelo aponta R$ 72 como ponto ótimo.'},
+ {id:'VX-430',n:'Final de preço ,97 contra ,90',s:'Mesmo desconto, centavos diferentes',lev:'preco',t:8,c:8,dias:28,m:'Conversão do item',ef:1.2,lo:-0.7,hi:3.1,u:'%',p:0.21,luc:0.6,st:'inc',
+  h:'Preço terminado em ,97 sinaliza desconto calculado e converte mais que ,90.',
+  r:[['Conversão','+1,2%','dentro do ruído'],['Itens testados','312','higiene e limpeza'],['Poder do teste','61%','amostra curta']],
+  d:'Inconclusivo. Rodar de novo com 16 lojas por 6 semanas antes de decidir.'},
+ {id:'VX-433',n:'Preço exclusivo só com CPF',s:'Oferta do folheto vale apenas para cliente ClubeFato',lev:'clube',t:20,c:20,dias:63,m:'Cupons identificados',ef:17.2,lo:15.1,hi:19.3,u:' p.p.',p:0.00001,luc:7.1,st:'esc',
+  h:'Trocar parte do desconto por identificação vale mais do que o desconto aberto, porque cada CPF alimenta todos os outros testes.',
+  r:[['Cupons com CPF','61,2% → 78,4%','no grupo teste'],['Venda do folheto','-1,4%','sem significância'],['Valor do dado','R$ 5,3 mi/ano','via ofertas personalizadas']],
+  d:'Escalar. É a base de dados de todos os outros experimentos.'},
+ {id:'VX-437',n:'Folheto começa na quinta',s:'Ciclo quinta a domingo contra segunda a domingo',lev:'preco',t:12,c:12,dias:42,m:'Fluxo de fim de semana',ef:4.6,lo:2.9,hi:6.3,u:'%',p:0.002,luc:2.3,st:'esc',
+  h:'Lançar a oferta na quinta pega o planejamento da compra de fim de semana e alcança dois sábados por ciclo.',
+  r:[['Fluxo sáb e dom','+4,6%','no grupo teste'],['Ruptura na segunda','-18%','reposição melhor'],['Custo de impressão','igual','mesmo volume']],
+  d:'Escalar. Já é o padrão observado no folheto de 17/09 a 27/09.'},
+ {id:'VX-440',n:'Limite de 6 unidades por CPF',s:'Itens âncora: 12 contra 6 unidades por cliente',lev:'clube',t:10,c:10,dias:28,m:'Perda para revenda',ef:-41.0,lo:-49.2,hi:-32.8,u:'%',p:0.0002,luc:1.9,st:'run',
+  h:'Revendedor informal compra só o item âncora no limite. Reduzir o limite corta esse vazamento sem incomodar a família.',
+  r:[['Compras no limite','-41%','cluster revendedor'],['Reclamações no SAC','+0,3%','estável'],['Dias restantes','12','de 40']],
+  d:'Rodando. Leitura parcial favorável; decisão em 08/10.'},
+ {id:'VX-444',n:'Cesta de churrasco',s:'Picanha como âncora com carvão e cerveja casados',lev:'trade',t:14,c:14,dias:35,m:'Margem da cesta',ef:8.7,lo:5.2,hi:12.2,u:'%',p:0.001,luc:2.8,st:'run',
+  h:'A carne em oferta traz o cliente; a margem vem do carvão, da cerveja e do pão de alho que ele leva junto.',
+  r:[['Itens por cupom','+2,3','no sábado'],['Margem da cesta','+8,7%','carne em oferta'],['Dias restantes','9','de 35']],
+  d:'Rodando. Tendência forte; confirmar com a semana do feriado.'},
+ {id:'VX-447',n:'Oferta personalizada no app',s:'Próxima melhor oferta por CPF contra oferta igual para todos',lev:'clube',t:16,c:16,dias:56,m:'Taxa de resgate',ef:7.5,lo:6.2,hi:8.8,u:' p.p.',p:0.00001,luc:4.4,st:'esc',
+  h:'Oferta escolhida pelo histórico de compra converte mais e dá desconto só para quem precisaria dele.',
+  r:[['Resgate de oferta','4,1% → 11,6%','no app'],['Desconto por cupom','-22%','mais focado'],['Frequência','+0,4 visita/mês','cluster reposição']],
+  d:'Escalar para 100% da base com app ativo.'},
+ {id:'VX-451',n:'Preço De/Por riscado',s:'Etiqueta com preço anterior riscado contra só preço final',lev:'preco',t:10,c:10,dias:28,m:'Conversão do item',ef:6.3,lo:4.1,hi:8.5,u:'%',p:0.0009,luc:1.2,st:'esc',
+  h:'Mostrar a âncora (R$ 44,30 por R$ 26,90) faz o desconto parecer maior do que o mesmo preço sozinho.',
+  r:[['Conversão','+6,3%','higiene e beleza'],['Itens testados','184','e-commerce e loja'],['Efeito no ticket','+R$ 0,74','por cupom']],
+  d:'Escalar em e-commerce e etiqueta eletrônica.'},
+ {id:'VX-455',n:'Remarcação de perecíveis às 18h',s:'Desconto automático por validade no fim do dia',lev:'pere',t:12,c:12,dias:42,m:'Quebra de perecíveis',ef:-27.0,lo:-33.4,hi:-20.6,u:'%',p:0.0001,luc:3.3,st:'run',
+  h:'Vender com 30% a 40% às 18h rende mais do que descartar às 22h.',
+  r:[['Quebra','-27%','padaria, FLV e frios'],['Venda após 18h','+9,1%','cluster noturno'],['Dias restantes','6','de 42']],
+  d:'Rodando. Resultado já passa do mínimo; expandir para açougue.'},
+ {id:'VX-458',n:'30% em capilares sem verba de marca',s:'Desconto profundo bancado só pelo varejo',lev:'trade',t:8,c:8,dias:28,m:'Lucro da categoria',ef:-7.9,lo:-11.3,hi:-4.5,u:'%',p:0.003,luc:-0.9,st:'rej',
+  h:'Desconto de 30% em cabelo atrai cliente novo para a loja.',
+  r:[['Volume da categoria','+24%','quase tudo antecipação'],['Cliente novo','+0,6%','não significativo'],['Lucro da categoria','-7,9%','perda']],
+  d:'Rejeitado. Desconto profundo em higiene só com verba da indústria, como nas ofertas atuais de 30%.'}
+];
+var ST={esc:['Escalar','p-esc'],run:['Rodando','p-run'],inc:['Inconclusivo','p-inc'],rej:['Rejeitado','p-rej']};
+
+/* ---------- visão geral ---------- */
+var escal=T.filter(function(t){return t.st==='esc';});
+var totEsc=escal.reduce(function(a,t){return a+t.luc;},0);
+document.getElementById('cEsc').textContent=escal.length;
+document.getElementById('cRun').textContent=T.filter(function(t){return t.st==='run';}).length;
+document.getElementById('heroPP').textContent='+'+f(totEsc/12600*100,2)+' p.p.';
+(function countUp(){var el=document.getElementById('heroNum');var end=totEsc;var t0=null;
+ function step(ts){if(!t0)t0=ts;var k=Math.min(1,(ts-t0)/1400);var e=1-Math.pow(1-k,3);el.innerHTML='R$ '+f(end*e,1)+'<small>mi/ano</small>';if(k<1)requestAnimationFrame(step);}
+ if(reduce){el.innerHTML='R$ '+f(end,1)+'<small>mi/ano</small>';}else requestAnimationFrame(step);})();
+
+// alavancas
+(function(){var by={};T.forEach(function(t){if(t.st==='esc'){by[t.lev]=(by[t.lev]||0)+t.luc;}});
+ var arr=Object.keys(by).map(function(k){return[k,by[k]];}).sort(function(a,b){return b[1]-a[1];});var mx=arr[0][1];
+ document.getElementById('levers').innerHTML=arr.map(function(a){var L=LEV[a[0]];return '<div class="lever"><span>'+L.n+'</span><div class="track"><div class="fill" style="width:'+(a[1]/mx*100)+'%;background:linear-gradient(90deg,'+alpha(L.c,.35)+','+L.c+')"></div></div><b>'+brlMi(a[1])+'</b></div>';}).join('');})();
+
+// relógio e contador
+var base=new Date();var secs=base.getHours()*3600+base.getMinutes()*60+base.getSeconds();
+var evCount=Math.round(Math.max(0,secs-6*3600)*41800+ 1.2e8);
+var cup=Math.round(Math.max(0,secs-7*3600)*9.6);
+var sel=Math.round(cup*2.7);
+var bars=document.getElementById('evBars');var bh=[];for(var i=0;i<34;i++){bh.push(40+R()*50);var b=document.createElement('i');b.style.height=bh[i]+'%';bars.appendChild(b);}
+function tick(){var d=new Date();document.getElementById('clock').textContent=d.toLocaleTimeString('pt-BR');
+ evCount+=Math.round(38000+R()*9000);cup+=Math.round(8+R()*4);sel+=Math.round(20+R()*14);
+ document.getElementById('evCount').textContent=f(evCount);document.getElementById('cupHoje').textContent=f(cup);document.getElementById('selHoje').textContent=f(sel);
+ bh.shift();bh.push(35+R()*60);var kids=bars.children;for(var i=0;i<kids.length;i++)kids[i].style.height=bh[i]+'%';}
+tick();setInterval(tick,1000);
+
+// feed
+var CID=['Londrina','Curitiba','Maringá','Cascavel','Foz do Iguaçu','Ponta Grossa','Toledo','Umuarama','Apucarana','Arapongas','Guarapuava','Campo Mourão','Paranavaí','Cianorte','Presidente Prudente','Assis','Marília'];
+var CL=['Abastecimento','Caçador de feira','Reposição','Churrasco','Conveniência','Saudável','Revendedor'];
+function evento(){var loja=String(1+Math.floor(R()*54)).padStart(3,'0');var c=CID[Math.floor(R()*CID.length)];var k=R();
+ if(k<.34){var v=18+Math.exp(3.9+gauss(R)*.7);var s=Math.floor(v/30);return ['t-blue','CUPOM','Loja '+loja+' · '+c+' · <b>R$ '+f(v,2)+'</b> · '+s+' selo'+(s===1?'':'s')+' · '+CL[Math.floor(R()*6)]];}
+ if(k<.5){return ['t-amber','SELO','Loja '+loja+' · '+c+' · <b>+1 selo acelerador</b> · onda 1'];}
+ if(k<.62){return ['t-violet','CARTÃO','Loja '+loja+' · <b>Crediffato</b> R$ '+f(60+R()*240,2)+' · selo adicional'];}
+ if(k<.74){var p=['banana prata','tomate','alface crespa','batata','laranja pera','mamão formosa'][Math.floor(R()*6)];return ['t-teal','FEIRA','Loja '+loja+' · '+c+' · <b>'+p+'</b> giro '+sgn(8+R()*30,0,'%')+' vs. média'];}
+ if(k<.86){return ['t-blue','APP','CPF ***.'+String(Math.floor(R()*999)).padStart(3,'0')+'.***-** · oferta personalizada <b>resgatada</b>'];}
+ if(k<.94){return ['t-coral','ALERTA','Loja '+loja+' · <b>compra no limite</b> em item âncora · cluster Revendedor'];}
+ return ['t-teal','REMARC','Loja '+loja+' · padaria <b>-35%</b> às 18h · lote '+Math.floor(1000+R()*8999)];}
+var feed=document.getElementById('feed');
+function push(){var e=evento();var d=new Date();var div=document.createElement('div');div.className='ev';div.innerHTML='<time>'+d.toLocaleTimeString('pt-BR')+'</time><span class="w">'+e[2]+'</span><span class="tag '+e[0]+'">'+e[1]+'</span>';feed.insertBefore(div,feed.firstChild);while(feed.children.length>14)feed.removeChild(feed.lastChild);}
+for(var j=0;j<10;j++)push();setInterval(push,reduce?4000:1300);
+
+// rede de fundo do hero
+(function(){var cv=document.getElementById('bgnet');var ctx=cv.getContext('2d');var pts=[];var W,H;var r2=rng(7);
+ function size(){var r=cv.getBoundingClientRect();W=cv.width=r.width*devicePixelRatio;H=cv.height=r.height*devicePixelRatio;}
+ size();window.addEventListener('resize',size);
+ for(var i=0;i<46;i++)pts.push({x:r2(),y:r2(),vx:(r2()-.5)*.0006,vy:(r2()-.5)*.0006});
+ function draw(){ctx.clearRect(0,0,W,H);for(var i=0;i<pts.length;i++){var p=pts[i];if(!reduce){p.x+=p.vx;p.y+=p.vy;if(p.x<0||p.x>1)p.vx*=-1;if(p.y<0||p.y>1)p.vy*=-1;}}
+  for(i=0;i<pts.length;i++)for(var k=i+1;k<pts.length;k++){var a=pts[i],b=pts[k];var dx=(a.x-b.x)*W,dy=(a.y-b.y)*H;var dd=Math.sqrt(dx*dx+dy*dy);var lim=150*devicePixelRatio;if(dd<lim){ctx.strokeStyle='rgba(111,163,255,'+(0.18*(1-dd/lim))+')';ctx.lineWidth=devicePixelRatio;ctx.beginPath();ctx.moveTo(a.x*W,a.y*H);ctx.lineTo(b.x*W,b.y*H);ctx.stroke();}}
+  for(i=0;i<pts.length;i++){ctx.fillStyle=i%7===0?'rgba(255,178,63,.8)':'rgba(111,163,255,.55)';ctx.beginPath();ctx.arc(pts[i].x*W,pts[i].y*H,(i%7===0?2.4:1.6)*devicePixelRatio,0,7);ctx.fill();}
+  if(!reduce)requestAnimationFrame(draw);}
+ draw();})();
+
+// sparks
+document.querySelectorAll('canvas.spark').forEach(function(cv){var t=cv.dataset.s;var r=cv.getBoundingClientRect();cv.width=r.width*devicePixelRatio;cv.height=r.height*devicePixelRatio;var ctx=cv.getContext('2d');var n=40;var ys=[];var r3=rng(t.length*97);
+ for(var i=0;i<n;i++){var x=i/(n-1);var y;if(t==='up')y=.3+x*.45+r3()*.08;else if(t==='up2')y=.25+Math.pow(x,1.6)*.55+r3()*.06;else if(t==='step')y=(x<.45?.3:.78)+r3()*.06;else y=.8-x*.5+r3()*.07;ys.push(y);}
+ var W=cv.width,H=cv.height;var g=ctx.createLinearGradient(0,0,0,H);var col=t==='down'?COL.teal:COL.blue2;g.addColorStop(0,alpha(col,.35));g.addColorStop(1,alpha(col,0));
+ ctx.beginPath();ys.forEach(function(y,i){var px=i/(n-1)*W,py=H-(y*H*.9);if(i)ctx.lineTo(px,py);else ctx.moveTo(px,py);});ctx.lineTo(W,H);ctx.lineTo(0,H);ctx.fillStyle=g;ctx.fill();
+ ctx.beginPath();ys.forEach(function(y,i){var px=i/(n-1)*W,py=H-(y*H*.9);if(i)ctx.lineTo(px,py);else ctx.moveTo(px,py);});ctx.strokeStyle=col;ctx.lineWidth=1.5*devicePixelRatio;ctx.stroke();
+ var ly=H-(ys[n-1]*H*.9);ctx.fillStyle=col;ctx.beginPath();ctx.arc(W-3*devicePixelRatio,ly,3*devicePixelRatio,0,7);ctx.fill();});
+
+// área empilhada
+if(hasChart){(function(){var weeks=[];var d0=new Date(2026,2,30);for(var i=0;i<26;i++){var d=new Date(d0.getTime()+i*7*864e5);weeks.push(String(d.getDate()).padStart(2,'0')+'/'+String(d.getMonth()+1).padStart(2,'0'));}
+ var r4=rng(11);var start={clube:3,pere:6,preco:9,selo:17,trade:12,cart:14};var keys=['clube','pere','selo','cart','trade','preco'];
+ var ds=keys.map(function(k){var tot=0;escal.forEach(function(t){if(t.lev===k)tot+=t.luc;});var wk=tot*1000/52;var s=start[k];
+  return{label:LEV[k].n,data:weeks.map(function(_,i){if(i<s)return 0;var ramp=Math.min(1,(i-s+1)/4);return Math.max(0,Math.round(wk*ramp*(0.9+r4()*0.2)));}),fill:true,backgroundColor:alpha(LEV[k].c,.28),borderColor:LEV[k].c,borderWidth:1.5,pointRadius:0,tension:.35};});
+ new Chart(document.getElementById('chArea'),{type:'line',data:{labels:weeks,datasets:ds},options:{interaction:{mode:'index',intersect:false},scales:{x:{grid:{display:false},ticks:{maxRotation:0,autoSkipPadding:14}},y:{stacked:true,grid:{color:alpha('#8FA0BF',.08)},ticks:{callback:function(v){return 'R$ '+f(v)+' mil';}}}},plugins:{legend:{position:'bottom',labels:{color:COL.tx2,padding:14}},tooltip:{callbacks:{label:function(c){return ' '+c.dataset.label+': R$ '+f(c.parsed.y)+' mil';}}}}}});})();}
+
+/* ---------- experimentos: tabela ---------- */
+var tbody=document.getElementById('tbody');var filtro='all';var selId='VX-433';
+function ciBar(t){var span=Math.max(Math.abs(t.lo),Math.abs(t.hi),Math.abs(t.ef))*1.15;function px(v){return 50+v/span*50;}var col=t.st==='rej'?COL.bad:(t.st==='inc'?COL.warn:(t.st==='run'?COL.blue2:COL.good));
+ return '<span class="cibar"><i style="left:'+px(Math.min(t.lo,t.hi))+'%;width:'+(px(Math.max(t.lo,t.hi))-px(Math.min(t.lo,t.hi)))+'%;background:'+alpha(col,.55)+'"></i><em style="left:'+px(t.ef)+'%;background:'+col+'"></em></span>';}
+function pfmt(p){return p<0.001?'< 0,001':f(p,3);}
+function render(){tbody.innerHTML=T.filter(function(t){return filtro==='all'||t.st===filtro;}).map(function(t){var s=ST[t.st];
+ return '<tr data-id="'+t.id+'" class="'+(t.id===selId?'sel':'')+'" tabindex="0"><td class="eid">'+t.id+'</td><td class="ename">'+t.n+'<small>'+t.s+'</small></td><td><span class="tag" style="background:'+alpha(LEV[t.lev].c,.13)+';color:'+LEV[t.lev].c+'">'+LEV[t.lev].n+'</span></td><td class="num">'+t.t+' / '+t.c+'</td><td class="r"><span class="ci"><span class="num">'+sgn(t.ef,1,t.u)+'</span>'+ciBar(t)+'</span></td><td class="r num">'+pfmt(t.p)+'</td><td class="r num" style="color:'+(t.luc<0?COL.bad:COL.tx)+'">'+brlMi(t.luc)+'</td><td><span class="pill '+s[1]+'">'+s[0]+'</span></td></tr>';}).join('');}
+render();
+tbody.addEventListener('click',function(e){var tr=e.target.closest('tr');if(!tr)return;selId=tr.dataset.id;render();showDetail();});
+tbody.addEventListener('keydown',function(e){if(e.key==='Enter'){var tr=e.target.closest('tr');if(tr){selId=tr.dataset.id;render();showDetail();}}});
+document.getElementById('filters').addEventListener('click',function(e){var b=e.target.closest('.fbtn');if(!b)return;filtro=b.dataset.f;document.querySelectorAll('.fbtn').forEach(function(x){x.setAttribute('aria-pressed',x===b?'true':'false');});render();});
+
+var detChart=null;
+function showDetail(){var t=T.find(function(x){return x.id===selId;});var s=ST[t.st];var el=document.getElementById('detail');
+ var cup=Math.round((t.t+t.c)*t.dias*4380);
+ el.innerHTML='<div class="dgrid"><div><div class="eyebrow">'+t.id+' · '+LEV[t.lev].n+'</div><h2 style="margin-top:6px">'+t.n+'</h2><p class="lead" style="margin-top:8px">'+t.h+'</p>'+
+ '<dl class="dl"><dt>Desenho</dt><dd>'+t.s+'</dd><dt>Grupos</dt><dd class="num">'+t.t+' lojas teste · '+t.c+' lojas controle</dd><dt>Duração</dt><dd class="num">'+t.dias+' dias · '+f(cup)+' cupons</dd><dt>Métrica principal</dt><dd>'+t.m+'</dd><dt>Status</dt><dd><span class="pill '+s[1]+'">'+s[0]+'</span></dd></dl>'+
+ '<div class="resrow">'+t.r.map(function(x){return '<div class="res"><span>'+x[0]+'</span><b>'+x[1]+'</b><span>'+x[2]+'</span></div>';}).join('')+'</div>'+
+ '<div class="decision"><b>Decisão.</b> '+t.d+'</div></div>'+
+ '<div><div class="ch" style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap"><h3>Efeito acumulado e intervalo de confiança</h3><p style="margin:0;color:var(--tx3);font-size:12px">'+t.m+' · teste contra controle</p></div><div class="chartbox" style="height:300px"><canvas id="chDet"></canvas></div></div></div>';
+ if(!hasChart)return;var r5=rng(t.id.charCodeAt(3)*1000+t.id.charCodeAt(5));var n=t.dias;var lab=[],mid=[],lo=[],hi=[];var half=(t.hi-t.lo)/2;
+ for(var i=1;i<=n;i++){lab.push('D'+i);var w=Math.sqrt(n/i);var m=t.ef+gauss(r5)*half*0.35*w/Math.sqrt(1+i*.05);mid.push(+m.toFixed(2));lo.push(+(m-half*w).toFixed(2));hi.push(+(m+half*w).toFixed(2));}
+ mid[n-1]=t.ef;lo[n-1]=t.lo;hi[n-1]=t.hi;var col=t.st==='rej'?COL.bad:(t.st==='inc'?COL.warn:COL.blue2);
+ if(detChart)detChart.destroy();
+ detChart=new Chart(document.getElementById('chDet'),{type:'line',data:{labels:lab,datasets:[
+  {label:'IC 95% superior',data:hi,borderWidth:0,pointRadius:0,fill:'+1',backgroundColor:alpha(col,.14),tension:.3},
+  {label:'IC 95% inferior',data:lo,borderWidth:0,pointRadius:0,fill:false,tension:.3},
+  {label:'Efeito estimado',data:mid,borderColor:col,borderWidth:2,pointRadius:function(c){return c.dataIndex===n-1?4:0;},pointBackgroundColor:col,tension:.3},
+  {label:'Sem efeito',data:lab.map(function(){return 0;}),borderColor:alpha('#A2ACC2',.5),borderDash:[4,4],borderWidth:1,pointRadius:0}]},
+  options:{interaction:{mode:'index',intersect:false},scales:{x:{grid:{display:false},ticks:{maxTicksLimit:8,maxRotation:0}},y:{grid:{color:alpha('#8FA0BF',.08)},ticks:{callback:function(v){return f(v,1)+t.u;}}}},plugins:{legend:{display:false},tooltip:{callbacks:{label:function(c){return ' '+c.dataset.label+': '+f(c.parsed.y,2)+t.u;}}}}}});}
+showDetail();
+
+/* ---------- comportamento ---------- */
+(function(){var days=['Seg','Ter','Qua','Qui','Sex','Sáb','Dom'];var h=document.getElementById('heat');var html='<div></div>';
+ for(var hr=7;hr<=22;hr++)html+='<div class="hl">'+(hr%3===1?hr+'h':'')+'</div>';
+ var r6=rng(33);
+ function val(d,hr){var base=[0,0,0,0,0,0,0];var x=hr;var v=18+30*Math.exp(-Math.pow((x-10.5)/1.8,2))+22*Math.exp(-Math.pow((x-12.3)/.9,2))+46*Math.exp(-Math.pow((x-18.3)/1.6,2));
+  if(d===1||d===2)v+=34*Math.exp(-Math.pow((x-9.6)/1.6,2));
+  if(d===4)v+=12*Math.exp(-Math.pow((x-19)/1.5,2));
+  if(d===5)v=26+58*Math.exp(-Math.pow((x-11.5)/2.6,2))+30*Math.exp(-Math.pow((x-17)/2,2));
+  if(d===6)v=(x<=13?20+56*Math.exp(-Math.pow((x-10.5)/2,2)):14+8*Math.exp(-Math.pow((x-17)/2,2)));
+  if(x>=21)v*=.55;return Math.max(3,Math.min(100,v+r6()*5));}
+ function color(v){var t=v/100;var stops=[[18,26,46],[29,58,120],[47,123,255],[255,178,63]];var seg=Math.min(2,Math.floor(t*3));var k=t*3-seg;var a=stops[seg],b=stops[seg+1];return 'rgb('+Math.round(a[0]+(b[0]-a[0])*k)+','+Math.round(a[1]+(b[1]-a[1])*k)+','+Math.round(a[2]+(b[2]-a[2])*k)+')';}
+ for(var d=0;d<7;d++){html+='<div class="lab">'+days[d]+'</div>';for(hr=7;hr<=22;hr++){var v=val(d,hr);html+='<div class="c" style="background:'+color(v)+'" title="'+days[d]+' '+hr+'h · índice '+Math.round(v)+'"></div>';}}
+ h.innerHTML=html;})();
+
+if(hasChart){
+(function(){var labels=[],data=[],cols=[];var r7=rng(5);var mu=Math.log(84),sg=.72;
+ for(var x=3;x<=210;x+=3){var lo=x-3,mid=x-1.5;var pdf=Math.exp(-Math.pow(Math.log(mid)-mu,2)/(2*sg*sg))/(mid*sg*Math.sqrt(2*Math.PI));var v=pdf*1e6*3;
+  var bump=false;[30,60,90,120].forEach(function(th,i){var amp=[.62,.48,.36,.26][i];if(lo>=th&&lo<th+3){v*=1+amp;bump=true;}if(lo>=th-3&&lo<th)v*=1-amp*.45;if(lo>=th+3&&lo<th+6)v*=1+amp*.2;});
+  v*=0.96+r7()*.08;labels.push(lo);data.push(Math.round(v));cols.push(bump?COL.amber:alpha(COL.blue2,.55));}
+ new Chart(document.getElementById('chHist'),{type:'bar',data:{labels:labels,datasets:[{data:data,backgroundColor:cols,borderRadius:2,barPercentage:1,categoryPercentage:.92}]},
+  options:{plugins:{legend:{display:false},tooltip:{callbacks:{title:function(c){var l=+c[0].label;return 'R$ '+l+' a R$ '+(l+3);},label:function(c){return ' '+f(c.parsed.y)+' mil cupons';}}}},
+  scales:{x:{grid:{display:false},ticks:{autoSkip:false,maxRotation:0,callback:function(v,i){var l=labels[i];return l%30===0?'R$ '+l:'';}}},y:{grid:{color:alpha('#8FA0BF',.08)},ticks:{callback:function(v){return f(v/1000,0)+' mi';}}}}}});})();
+
+(function(){var cats=[['Hortifruti',2.41],['Cervejas',2.16],['Carnes bovinas',1.87],['Refrigerantes',1.72],['Higiene capilar',1.34],['Limpeza',1.19],['Laticínios',1.05],['Café',0.91],['Mercearia básica',0.64],['Padaria',0.58]];
+ new Chart(document.getElementById('chElast'),{type:'bar',data:{labels:cats.map(function(c){return c[0];}),datasets:[{data:cats.map(function(c){return c[1];}),backgroundColor:cats.map(function(c){return c[1]>1.5?COL.amber:(c[1]>1?COL.blue2:alpha(COL.blue2,.45));}),borderRadius:4,barThickness:16}]},
+ options:{indexAxis:'y',plugins:{legend:{display:false},tooltip:{callbacks:{label:function(c){return ' elasticidade -'+f(c.parsed.x,2)+' · 10% de desconto → +'+f(c.parsed.x*10,1)+'% de volume';}}}},scales:{x:{grid:{color:alpha('#8FA0BF',.08)},ticks:{callback:function(v){return '-'+f(v,1);}}},y:{grid:{display:false},ticks:{color:COL.tx2,font:{family:"'IBM Plex Sans', sans-serif",size:12}}}}}});})();
+
+(function(){var desc=[20,25,30,35,40,45,50,55];var halo=desc.map(function(d){return +(3.9*Math.exp(-(d-20)/28)+.6).toFixed(2);});var marg=desc.map(function(d){return +((1-d/100)-0.63).toFixed(3)*100;});
+ new Chart(document.getElementById('chHalo'),{data:{labels:desc.map(function(d){return d+'%';}),datasets:[
+  {type:'bar',label:'Gasto fora do hortifruti por R$ 1 de desconto',data:halo,backgroundColor:desc.map(function(d){return d<=35?COL.teal:alpha(COL.teal,.35);}),borderRadius:4,yAxisID:'y'},
+  {type:'line',label:'Margem do item em oferta (p.p.)',data:marg,borderColor:COL.coral,backgroundColor:COL.coral,borderWidth:2,pointRadius:3,tension:.3,yAxisID:'y1'}]},
+  options:{interaction:{mode:'index',intersect:false},plugins:{legend:{position:'bottom',labels:{color:COL.tx2}}},scales:{x:{grid:{display:false},title:{display:true,text:'desconto no item de feira',color:COL.tx3}},y:{grid:{color:alpha('#8FA0BF',.08)},ticks:{callback:function(v){return 'R$ '+f(v,1);}}},y1:{position:'right',grid:{display:false},ticks:{callback:function(v){return f(v,0)+' p.p.';}}}}}});})();
+}
+
+(function(){var S=[
+ ['Reposição da semana',25.8,'Passa 4 vezes por mês, cesta curta e previsível. Responde a oferta no app.','R$ 88',4.1,'app'],
+ ['Abastecimento mensal',17.9,'Compra grande no começo do mês. Olha o folheto e junta selos.','R$ 412',1.3,'folheto e selos'],
+ ['Conveniência',16.2,'Entra no fim da tarde para 3 a 5 itens. Pouco sensível a preço.','R$ 37',7.4,'remarcação das 18h'],
+ ['Saudável e premium',14.9,'Orgânicos, importados e padaria. Valoriza sortimento, não desconto.','R$ 146',3.2,'lançamento e degustação'],
+ ['Caçador de feira',14.1,'Vem terça e quarta cedo. Hortifruti é mais da metade do cupom.','R$ 64',5.8,'Dia de Feira'],
+ ['Churrasco de sábado',9.0,'Carne, carvão e bebida. Aparece em véspera de feriado e jogo.','R$ 196',2.2,'cesta de churrasco'],
+ ['Revendedor informal',2.1,'Leva só item âncora, sempre no limite por CPF. Margem negativa.','R$ 688',3.9,'limite de unidades']];
+ var cols=[COL.blue2,COL.amber,COL.violet,COL.teal,COL.good,COL.coral,COL.bad];
+ document.getElementById('segs').innerHTML=S.map(function(s,i){return '<div class="card seg"><div class="sh"><h3>'+s[0]+'</h3><span class="share num" style="color:'+cols[i]+'">'+f(s[1],1)+'%</span></div><p>'+s[2]+'</p><dl><div><dt>Ticket</dt><dd>'+s[3]+'</dd></div><div><dt>Visitas/mês</dt><dd>'+f(s[4],1)+'</dd></div><div><dt>CPFs</dt><dd>'+f(4.31*s[1]/100*1000,0)+' mil</dd></div></dl><div class="resp">Responde a: <b>'+s[5]+'</b></div></div>';}).join('');})();
+
+/* ---------- simulador ---------- */
+var CUR={d:50,L:30,X:60,t:70};
+function feira(d){d/=100;return 9.2-120*Math.pow(d-0.34,2);}
+function selo(L){return 12-0.09*Math.pow(L-37,2);}
+function cartao(X){return 8-0.0022*Math.pow(X-72,2)*1.4;}
+function trade(t){return 3.9*(t/70)-0.2*Math.max(0,(t-85))/15;}
+function total(p){return feira(p.d)+selo(p.L)+cartao(p.X)+trade(p.t);}
+var simChart=null;
+function sim(){var p={d:+sFeira.value,L:+sSelo.value,X:+sCard.value,t:+sTrade.value};
+ oFeira.textContent=p.d+'%';oSelo.textContent='R$ '+p.L;oCard.textContent='R$ '+p.X;oTrade.textContent=p.t+'%';
+ var dl=total(p)-total(CUR);var out=document.getElementById('simOut');out.textContent=(dl>0.05?'+':'')+brlMi(dl);out.style.color=dl>0.05?COL.good:(dl<-0.05?COL.bad:COL.tx);
+ var txt=Math.abs(dl)<0.05?'Mesma política praticada hoje.':(dl>0?'Ganho anual projetado sobre a política atual, com as 54 lojas.':'Perda anual projetada sobre a política atual.');document.getElementById('simTxt').textContent=txt;
+ var fl=(p.d-CUR.d)*0.05-(p.L-CUR.L)*0.03;var tk=(p.L-CUR.L)*0.12-(p.d-CUR.d)*0.01;var mg=-(p.d-CUR.d)*0.72;var sc=(118/p.L-118/CUR.L)*0.55*9.8+(118/p.X-118/CUR.X)*0.55*1.6;
+ mFluxo.textContent=sgn(fl,1,'%');mTicket.textContent=sgn(tk,1,'%');mMarg.textContent=sgn(mg,1,' p.p.');mSelo.textContent=(sc>0?'+':'')+brlMi(sc);
+ [mFluxo,mTicket,mMarg].forEach(function(e){e.style.color=e.textContent.charAt(0)==='+'?COL.good:(e.textContent.charAt(0)==='-'?COL.bad:COL.tx);});mSelo.style.color=sc>0.05?COL.bad:(sc<-0.05?COL.good:COL.tx);
+ if(!hasChart)return;var xs=[];for(var d=15;d<=60;d++)xs.push(d);
+ var curve=xs.map(function(d){return +(total({d:d,L:p.L,X:p.X,t:p.t})-total(CUR)).toFixed(2);});
+ var dot=xs.map(function(d){return d===p.d?curve[d-15]:null;});var now=xs.map(function(d){return d===CUR.d?+(total({d:CUR.d,L:p.L,X:p.X,t:p.t})-total(CUR)).toFixed(2):null;});
+ if(!simChart){simChart=new Chart(document.getElementById('chSim'),{type:'line',data:{labels:xs.map(function(d){return d+'%';}),datasets:[
+  {label:'Lucro anual vs. política atual',data:curve,borderColor:COL.blue2,backgroundColor:alpha(COL.blue2,.14),fill:true,borderWidth:2,pointRadius:0,tension:.35},
+  {label:'Sua escolha',data:dot,pointRadius:7,pointBackgroundColor:COL.amber,pointBorderColor:'#fff',pointBorderWidth:2,showLine:false},
+  {label:'Desconto de hoje (50%)',data:now,pointRadius:6,pointStyle:'rectRot',pointBackgroundColor:COL.tx2,showLine:false}]},
+  options:{animation:{duration:250},plugins:{legend:{position:'bottom',labels:{color:COL.tx2,usePointStyle:true}},tooltip:{filter:function(i){return i.parsed.y!==null;},callbacks:{label:function(c){return ' '+c.dataset.label+': '+brlMi(c.parsed.y);}}}},
+  scales:{x:{grid:{display:false},title:{display:true,text:'desconto no Dia de Feira',color:COL.tx3},ticks:{maxTicksLimit:10,maxRotation:0}},y:{grid:{color:alpha('#8FA0BF',.08)},ticks:{callback:function(v){return 'R$ '+f(v,0)+' mi';}}}}}});}
+ else{simChart.data.datasets[0].data=curve;simChart.data.datasets[1].data=dot;simChart.data.datasets[2].data=now;simChart.update();}}
+var sFeira=document.getElementById('sFeira'),sSelo=document.getElementById('sSelo'),sCard=document.getElementById('sCard'),sTrade=document.getElementById('sTrade');
+var oFeira=document.getElementById('oFeira'),oSelo=document.getElementById('oSelo'),oCard=document.getElementById('oCard'),oTrade=document.getElementById('oTrade');
+var mFluxo=document.getElementById('mFluxo'),mTicket=document.getElementById('mTicket'),mMarg=document.getElementById('mMarg'),mSelo=document.getElementById('mSelo');
+[sFeira,sSelo,sCard,sTrade].forEach(function(s){s.addEventListener('input',sim);});
+document.getElementById('simReset').addEventListener('click',function(){sFeira.value=CUR.d;sSelo.value=CUR.L;sCard.value=CUR.X;sTrade.value=CUR.t;sim();});
+
+/* ---------- lógica das promoções ---------- */
+(function(){var M=[
+ ['Dia de Feira','Terça e quarta com hortifruti até 50% mais barato.','Gazeta do Povo','Gera fluxo nos dias mais fracos da semana. O hortifruti é o item que o cliente compara e que estraga rápido, então o desconto também acelera o giro.','Calibrar a profundidade por item e loja pela elasticidade. 35% segura o fluxo; 50% só nos 6 itens de vitrine.','VX-412'],
+ ['Selinhos de Descontos Incríveis','1 selo a cada R$ 30 no mesmo cupom. Com 20 selos, compra panela MasterChef com desconto. De 21/09/2026 a 10/01/2027.','Regulamento oficial','Programa de continuidade: prende o cliente por 16 semanas e empurra o cupom para o próximo múltiplo de R$ 30.','Medir o amontoado de cupons logo acima de cada degrau e escolher o valor do selo que maximiza lucro, não adesão.','VX-418'],
+ ['Produtos aceleradores','Itens de Batavo, Nestlé, Omo, Ypê, Sadia, Red Bull e outras dão selo extra, em 3 ondas.','Regulamento oficial','A indústria paga pelo selo extra. Para o varejo é mídia vendida dentro da loja.','Provar o sell-out incremental de cada marca com grupo controle e cobrar a próxima onda pelo resultado.','VX-421'],
+ ['Selo adicional no Crediffato','Compra acima de R$ 60 paga só com o cartão ganha 1 selo a mais.','Regulamento oficial','Muda o meio de pagamento para o cartão próprio, que custa menos em taxa e gera receita financeira e dado de crédito.','Achar o degrau em que o selo extra ainda compensa. O modelo aponta R$ 72.','VX-425'],
+ ['ClubeFato e CPF no caixa','Preço exclusivo e selos só para quem informa o CPF antes de passar as compras.','Regulamento oficial','Troca desconto por identificação. Cada cupom com CPF vira histórico de compra.','Sem CPF não existe teste, segmento nem oferta personalizada. É a base de tudo.','VX-433'],
+ ['Oferta personalizada no app','Ofertas e vouchers exclusivos no aplicativo e no ClubeFato.','Google Play e App Store','Dá desconto só para quem precisaria dele para comprar, em vez de dar para todos.','Modelo de próxima melhor oferta por CPF, treinado no histórico do cupom.','VX-447'],
+ ['Folheto de quinta a domingo','Ofertas da Semana válidas de 17/09 a 27/09/2026, começando numa quinta.','Portafolhetos','Chega antes do planejamento da compra de fim de semana e cobre dois sábados.','Testar dia de lançamento e duração do ciclo contra fluxo e ruptura.','VX-437'],
+ ['30% e preço especial em higiene','Creme Seda de R$ 37,10 por R$ 25,97. Absorvente de R$ 44,30 por R$ 26,90.','Site de ofertas','Categoria de margem alta e desconto bancado por marca. O ,97 mostra que é exatamente 30%. O De/Por ancora o valor.','Separar desconto com verba de desconto sem verba, e testar formato de etiqueta.','VX-451'],
+ ['Limite de 12 unidades ou 6 kg','Promoção limitada por cliente, sem venda por atacado.','Site de ofertas','Impede que revendedor esvazie a oferta que foi feita para trazer família.','Detectar o padrão de compra no limite e ajustar o teto por item.','VX-440']];
+ var html='<div class="mrow hd"><div>O que o Muffato faz</div><div>Lógica provável</div><div>Onde entram os dados</div><div>Teste</div></div>';
+ html+=M.map(function(m){return '<div class="mrow"><div><h3>'+m[0]+'</h3><p>'+m[1]+'</p><span class="src">Fonte: '+m[2]+'</span></div><div><p>'+m[3]+'</p></div><div><p>'+m[4]+'</p></div><div><button class="lnk" data-go="'+m[5]+'">'+m[5]+' →</button></div></div>';}).join('');
+ var el=document.getElementById('mech');el.innerHTML=html;
+ el.addEventListener('click',function(e){var b=e.target.closest('.lnk');if(!b)return;selId=b.dataset.go;filtro='all';document.querySelectorAll('.fbtn').forEach(function(x){x.setAttribute('aria-pressed',x.dataset.f==='all'?'true':'false');});go('exp');render();showDetail();window.scrollTo({top:0,behavior:'smooth'});});})();
+
+/* ---------- abas ---------- */
+var simReady=false;
+function go(v){document.querySelectorAll('.tab').forEach(function(t){t.setAttribute('aria-selected',t.dataset.v===v?'true':'false');});
+ document.querySelectorAll('section.view').forEach(function(s){s.classList.toggle('on',s.id==='v-'+v);});
+ if(v==='sim'&&!simReady){simReady=true;sim();}
+ try{history.replaceState(null,'','#'+v);}catch(e){}
+ if(hasChart)Object.values(Chart.instances).forEach(function(c){c.resize();});}
+document.querySelectorAll('.tab').forEach(function(t){t.addEventListener('click',function(){go(t.dataset.v);});});
+var h0=(location.hash||'').replace('#','');if(['geral','exp','comp','sim','merc'].indexOf(h0)>=0)go(h0);
+})();
+</script>
+</body>
+</html>
