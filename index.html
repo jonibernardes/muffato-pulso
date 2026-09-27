@@ -83,7 +83,7 @@ h3{font-size:15.5px;font-weight:700;margin:0}
 .seg button[aria-pressed="true"]{background:var(--panel2);font-weight:700}
 .seg.red button[aria-pressed="true"]{background:var(--red);color:#fff}
 .tw{overflow-x:auto;border:1px solid var(--line);border-radius:var(--r);background:#fff}
-table{border-collapse:collapse;width:100%;min-width:980px}
+table{border-collapse:collapse;width:100%;min-width:780px}
 th{font-size:12px;font-weight:500;color:var(--tx3);text-align:left;padding:11px 12px;border-bottom:1px solid var(--line);background:var(--panel2);white-space:nowrap;user-select:none}
 th.s{cursor:pointer}th.s:hover{color:var(--tx)}
 td{padding:11px 12px;border-bottom:1px solid var(--line);vertical-align:middle;font-size:13.5px}
@@ -94,7 +94,7 @@ tbody tr.on{background:rgba(230,68,37,.05);box-shadow:inset 3px 0 0 var(--red)}
 .r{text-align:right}.nw{white-space:nowrap}
 .id{font-weight:700;color:var(--tx2);white-space:nowrap}
 .nm small{display:block;color:var(--tx3);font-size:12px}
-.prog{width:118px}
+.prog{width:100px}
 .prog small{font-size:12px;color:var(--tx2)}
 .prog i{display:block;height:4px;background:#ECEBE7;border-radius:3px;margin-top:4px;overflow:hidden}
 .prog i b{display:block;height:100%;background:var(--red);border-radius:3px}
@@ -106,11 +106,11 @@ tbody tr.on{background:rgba(230,68,37,.05);box-shadow:inset 3px 0 0 var(--red)}
 .p-dra{color:var(--tx2);background:#EDECE8}
 .p-man{font-size:10.5px;color:var(--tx3);border:1px solid var(--line2);padding:0 6px;border-radius:4px;margin-left:6px}
 .ci{display:flex;align-items:center;gap:8px;justify-content:flex-end}
-.cib{position:relative;width:70px;height:8px;flex:none}
+.cib{position:relative;width:54px;height:8px;flex:none}
 .cib::before{content:"";position:absolute;left:50%;top:-3px;bottom:-3px;width:1px;background:var(--line2)}
 .cib i{position:absolute;top:3px;height:2px}
 .cib em{position:absolute;top:1px;width:6px;height:6px;border-radius:50%;margin-left:-3px}
-.lay{display:grid;grid-template-columns:minmax(0,1fr) 380px;gap:14px;align-items:start}
+.lay{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:14px;align-items:start}
 .det{position:sticky;top:82px}
 .det .top{display:flex;justify-content:space-between;gap:8px;align-items:start}
 .det .kv{display:grid;grid-template-columns:86px 1fr;gap:6px 10px;font-size:13px;margin:14px 0}
@@ -123,7 +123,7 @@ tbody tr.on{background:rgba(230,68,37,.05);box-shadow:inset 3px 0 0 var(--red)}
 .acts .btn{justify-content:center}
 .fx{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 .empty{padding:40px 16px;text-align:center;color:var(--tx3)}
-@media (max-width:1280px){.lay{grid-template-columns:1fr}.det{position:static}}
+@media (max-width:1360px){.lay{grid-template-columns:1fr}.det{position:static}}
 .big{font-size:40px;font-weight:900;letter-spacing:-.03em;font-variant-numeric:tabular-nums}
 .counter{font-size:34px;font-weight:900;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
 .bars{display:flex;align-items:end;gap:3px;height:52px;margin:12px 0}
@@ -296,7 +296,7 @@ details ul{margin:8px 0 0;padding-left:18px;line-height:1.9;font-size:13px}
       <button class="btn sm" id="btnCsv"><svg class="i" viewBox="0 0 24 24"><path d="M12 3v12M7 10l5 5 5-5M4 21h16"/></svg>Exportar CSV</button>
     </div>
     <div class="lay">
-      <div class="tw"><table><thead><tr><th class="s" data-k="id">ID</th><th>Experimento</th><th>Tipo</th><th class="r">Lojas T/C</th><th class="s" data-k="prog">Progresso</th><th class="r">Efeito</th><th class="r s" data-k="p">p</th><th class="r s" data-k="luc">Lucro/ano</th><th>Status</th></tr></thead><tbody id="tb"></tbody></table></div>
+      <div class="tw"><table><thead><tr><th class="s" data-k="id">ID</th><th>Experimento</th><th class="r">Lojas</th><th class="s" data-k="prog">Progresso</th><th class="r">Efeito</th><th class="r s" data-k="p">p</th><th class="r s" data-k="luc">Lucro/ano</th><th>Status</th></tr></thead><tbody id="tb"></tbody></table></div>
       <div class="card det" id="det"></div>
     </div>
   </section>
@@ -547,7 +547,7 @@ function rows(){var L=ALL().filter(function(t){return (filtro==='all'||t.st===fi
 function renderExp(){var A=ALL(),F=fac();var esc=A.filter(function(t){return t.st==='esc';}),fin=A.filter(function(t){return t.st==='esc'||t.st==='rej'||t.st==='inc';});
  $('eRun').textContent=A.filter(function(t){return t.st==='run';}).length;$('eEsc').textContent=esc.length;$('eLuc').textContent=mi(capt()*F)+'/ano';$('eAc').textContent=f(fin.length?esc.length/fin.length*100:0)+'%';
  var L=rows();
- $('tb').innerHTML=L.length?L.map(function(t){var s=ST[t.st],pg=progOf(t);return '<tr class="ck'+(t.id===selId?' on':'')+'" data-id="'+t.id+'" tabindex="0"><td class="id">'+t.id+'</td><td class="nm">'+t.n+(t.man?'<span class="p-man">manual</span>':'')+'<small>'+t.it+'</small></td><td>'+t.tp+'</td><td class="r num">'+t.t+'/'+t.c+'</td><td><div class="prog"><small>'+(t.st==='dra'?'não iniciado':pg>=t.dias?'concluído':'dia '+pg+' de '+t.dias)+'</small><i><b style="width:'+(pg/t.dias*100)+'%"></b></i></div></td><td class="r"><span class="ci"><span class="num nw">'+(t.ef===null?'aguardando':sgn(t.ef,1,t.u))+'</span>'+ciBar(t)+'</span></td><td class="r num nw">'+pf(t.p)+'</td><td class="r num nw" style="color:'+(t.luc<0?COL.bad:COL.tx)+'">'+(t.luc===null?'–':mi(t.luc))+'</td><td><span class="pill '+s[1]+'">'+s[0]+'</span></td></tr>';}).join(''):'<tr><td colspan="9" class="empty">Nenhum teste com esse filtro.</td></tr>';
+ $('tb').innerHTML=L.length?L.map(function(t){var s=ST[t.st],pg=progOf(t);return '<tr class="ck'+(t.id===selId?' on':'')+'" data-id="'+t.id+'" tabindex="0"><td class="id">'+t.id+'</td><td class="nm">'+t.n+(t.man?'<span class="p-man">manual</span>':'')+'<small>'+t.tp+' · '+t.it+'</small></td><td class="r num">'+t.t+'/'+t.c+'</td><td><div class="prog"><small>'+(t.st==='dra'?'não iniciado':pg>=t.dias?'concluído':'dia '+pg+' de '+t.dias)+'</small><i><b style="width:'+(pg/t.dias*100)+'%"></b></i></div></td><td class="r"><span class="ci"><span class="num nw">'+(t.ef===null?'aguardando':sgn(t.ef,1,t.u))+'</span>'+ciBar(t)+'</span></td><td class="r num nw">'+pf(t.p)+'</td><td class="r num nw" style="color:'+(t.luc<0?COL.bad:COL.tx)+'">'+(t.luc===null?'–':mi(t.luc))+'</td><td><span class="pill '+s[1]+'">'+s[0]+'</span></td></tr>';}).join(''):'<tr><td colspan="8" class="empty">Nenhum teste com esse filtro.</td></tr>';
  if(!A.some(function(t){return t.id===selId;}))selId=A[0].id;showDet();renderGeral();}
 $('tb').addEventListener('click',function(e){var tr=e.target.closest('tr[data-id]');if(!tr)return;selId=tr.dataset.id;renderExp();});
 $('tb').addEventListener('keydown',function(e){if(e.key==='Enter'){var tr=e.target.closest('tr[data-id]');if(tr){selId=tr.dataset.id;renderExp();}}});
@@ -636,7 +636,7 @@ var curIt='presunto',curP=IT.presunto.def,chL=null,chS=null,chB=null;
 function drawItem(){var it=IT[curIt],s=itSim(it,curP);
  $('itPick').innerHTML=Object.keys(IT).map(function(k){return '<button class="pk" aria-pressed="'+(k===curIt)+'" data-it="'+k+'">'+IT[k].n+'</button>';}).join('');
  $('ppPick').innerHTML=it.pts.map(function(p){return '<button class="pk pp'+(p===it.P0?' base':'')+'" aria-pressed="'+(p===curP)+'" data-p="'+p+'">'+brl(p)+(p===it.P0?' hoje':'')+'</button>';}).join('');
- var A=[['Lucro do item',kf(s.item)+'/sem',sgn(s.dq,1,'% volume'),s.item],['Lucro da loja',kf(s.total)+'/sem',mi(s.total*52/1e6)+'/ano',s.total],['Clientes fiéis',sgn(s.loy,2,'%'),'visitas',s.loy*100],['Visitantes novos',sgn(s.nw,2,'%'),'pela oferta',s.nw*100]];
+ var A=[['Lucro do item',kf(s.item)+'/sem',sgn(s.dq,1,'% volume'),s.item],['Lucro da loja',kf(s.total)+'/sem',mi(s.total*52/1e6)+'/ano',s.total],['Clientes fiéis',sgn(s.loy,2,'%'),'visitas',s.loy*20],['Visitantes novos',sgn(s.nw,2,'%'),'pela oferta',s.nw*100]];
  $('ans').innerHTML=A.map(function(a){return '<div class="an"><span>'+a[0]+'</span><b style="color:'+(a[3]>0.5?COL.good:a[3]<-0.5?COL.bad:COL.tx)+'">'+a[1]+'</b><small>'+a[2]+'</small></div>';}).join('');
  var worst=SEGN[s.sd.indexOf(Math.min.apply(null,s.sd))].toLowerCase(),cls,tx;
  if(curP===it.P0){cls='v-eq';tx='<b>Preço atual.</b> Escolha um degrau.';}
