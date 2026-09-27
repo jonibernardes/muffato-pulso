@@ -70,7 +70,8 @@ h3{font-size:16px;font-weight:600}
 .g-2{grid-template-columns:1fr 1fr}
 .g-3{grid-template-columns:repeat(3,1fr)}
 @media (max-width:1080px){.g-hero,.g-main,.g-2{grid-template-columns:1fr}.g-4{grid-template-columns:1fr 1fr}.g-3{grid-template-columns:1fr 1fr}}
-@media (max-width:640px){.g-4,.g-3{grid-template-columns:1fr}.tabs{margin-left:0;width:100%}.live{display:none}}
+@media (max-width:640px){.g-4,.g-3{grid-template-columns:1fr}.tabs{margin-left:0;width:100%}}
+@media (max-width:1180px){.topin .proto{order:3}}
 
 /* hero */
 .hero{position:relative;overflow:hidden;padding:26px 26px 22px}
@@ -131,7 +132,8 @@ tbody tr{cursor:pointer;transition:background .15s}
 tbody tr:hover{background:rgba(255,255,255,.025)}
 tbody tr.sel{background:rgba(47,123,255,.08);box-shadow:inset 3px 0 0 var(--blue)}
 td.r,th.r{text-align:right}
-.eid{font:600 12px var(--fm);color:var(--tx3)}
+.eid{font:600 12px var(--fm);color:var(--tx3);white-space:nowrap}
+td.r,td.num{white-space:nowrap}
 .ename{font-weight:500}
 .ename small{display:block;color:var(--tx3);font-size:12px;font-weight:400}
 .pill{display:inline-flex;align-items:center;gap:6px;font:600 11px var(--fm);padding:4px 9px;border-radius:99px;white-space:nowrap}
@@ -232,7 +234,6 @@ input[type=range]{width:100%;margin-top:10px;accent-color:var(--blue);height:24p
       <button class="tab" role="tab" aria-selected="false" data-v="sim" id="tab-sim">Simulador</button>
       <button class="tab" role="tab" aria-selected="false" data-v="merc" id="tab-merc">Lógica das promoções</button>
     </nav>
-    <span class="live"><span class="dot"></span><span id="clock">--:--:--</span> · lag 4s</span>
   </div>
 </header>
 
@@ -254,7 +255,7 @@ input[type=range]{width:100%;margin-top:10px;accent-color:var(--blue);height:24p
       </div>
     </div>
     <div class="card stream">
-      <div class="ch"><h3>Eventos processados hoje</h3><p>cupom, app, pin pad, e-commerce</p></div>
+      <div class="ch"><h3>Eventos processados hoje</h3><span class="live"><span class="dot"></span><span id="clock">--:--:--</span> · lag 4s</span></div>
       <div class="counter" id="evCount">0</div>
       <div class="bars" id="evBars" aria-hidden="true"></div>
       <div class="mini">
@@ -342,20 +343,20 @@ input[type=range]{width:100%;margin-top:10px;accent-color:var(--blue);height:24p
   </div>
 
   <div class="head" style="margin-top:28px"><div><div class="eyebrow">Agrupamento k-means · 4,31 mi CPFs · 38 variáveis</div><h2>Os 7 tipos de cliente</h2></div></div>
-  <div class="grid g-3" id="segs"></div>
+  <div class="grid g-4" id="segs"></div>
 </section>
 
 <!-- ============ SIMULADOR ============ -->
 <section class="view" id="v-sim" role="tabpanel" aria-labelledby="tab-sim">
   <div class="head"><div><div class="eyebrow">Modelo de resposta calibrado nos experimentos</div><h2>Simulador de política promocional</h2>
   <p class="lead">Mexa nas alavancas e veja o lucro anual projetado contra a política praticada hoje. As curvas vêm dos testes VX-412, VX-418, VX-425 e VX-421.</p></div>
-  <button class="reset" id="simReset">Voltar para a política atual</button></div>
+  <div class="filters"><button class="reset" id="simBest" style="border-color:var(--amber);color:var(--amber)">Aplicar ótimo do modelo</button><button class="reset" id="simReset">Voltar para a política atual</button></div></div>
   <div class="sim">
     <div class="card">
       <div class="ctl"><label for="sFeira">Desconto no Dia de Feira <output id="oFeira">50%</output></label><small>Hortifruti, terça e quarta. Hoje: até 50%</small><input type="range" id="sFeira" min="15" max="60" step="1" value="50"></div>
       <div class="ctl"><label for="sSelo">Valor por selo <output id="oSelo">R$ 30</output></label><small>Selinhos de Descontos Incríveis. Hoje: 1 selo a cada R$ 30</small><input type="range" id="sSelo" min="20" max="50" step="1" value="30"></div>
       <div class="ctl"><label for="sCard">Selo adicional Crediffato a cada <output id="oCard">R$ 60</output></label><small>Compra paga só com o cartão. Hoje: R$ 60</small><input type="range" id="sCard" min="40" max="120" step="5" value="60"></div>
-      <div class="ctl"><label for="sTrade">Verba de marca nos aceleradores <output id="oTrade">70%</output></label><small>Parte do custo do selo extra que a indústria paga</small><input type="range" id="sTrade" min="0" max="100" step="5" value="70"></div>
+      <div class="ctl"><label for="sTrade">Verba de marca nos aceleradores <output id="oTrade">70%</output></label><small>Parte do custo do selo extra que a indústria paga. Acima de 85%, marca começa a sair</small><input type="range" id="sTrade" min="0" max="100" step="5" value="70"></div>
     </div>
     <div class="card">
       <div class="eyebrow">Diferença de lucro contra a política atual</div>
@@ -639,14 +640,14 @@ if(hasChart){
  ['Churrasco de sábado',9.0,'Carne, carvão e bebida. Aparece em véspera de feriado e jogo.','R$ 196',2.2,'cesta de churrasco'],
  ['Revendedor informal',2.1,'Leva só item âncora, sempre no limite por CPF. Margem negativa.','R$ 688',3.9,'limite de unidades']];
  var cols=[COL.blue2,COL.amber,COL.violet,COL.teal,COL.good,COL.coral,COL.bad];
- document.getElementById('segs').innerHTML=S.map(function(s,i){return '<div class="card seg"><div class="sh"><h3>'+s[0]+'</h3><span class="share num" style="color:'+cols[i]+'">'+f(s[1],1)+'%</span></div><p>'+s[2]+'</p><dl><div><dt>Ticket</dt><dd>'+s[3]+'</dd></div><div><dt>Visitas/mês</dt><dd>'+f(s[4],1)+'</dd></div><div><dt>CPFs</dt><dd>'+f(4.31*s[1]/100*1000,0)+' mil</dd></div></dl><div class="resp">Responde a: <b>'+s[5]+'</b></div></div>';}).join('');})();
+ document.getElementById('segs').innerHTML=S.map(function(s,i){return '<div class="card seg"><div class="sh"><h3>'+s[0]+'</h3><span class="share num" style="color:'+cols[i]+'">'+f(s[1],1)+'%</span></div><p>'+s[2]+'</p><dl><div><dt>Ticket</dt><dd>'+s[3]+'</dd></div><div><dt>Visitas/mês</dt><dd>'+f(s[4],1)+'</dd></div><div><dt>CPFs</dt><dd>'+f(4.31*s[1]/100*1000,0)+' mil</dd></div></dl><div class="resp">Responde a: <b>'+s[5]+'</b></div></div>';}).join('')+'<div class="card seg" style="background:linear-gradient(160deg,rgba(47,123,255,.14),var(--bg2))"><div class="sh"><h3>Como o modelo roda</h3></div><p>Reclassifica toda segunda às 04h com as compras da semana. Cliente que muda de grupo dispara oferta nova no app.</p><dl><div><dt>Silhueta</dt><dd>0,41</dd></div><div><dt>Variáveis</dt><dd>38</dd></div><div><dt>Mudaram</dt><dd>6,8%/sem</dd></div></dl><div class="resp">Sem grupo: <b>clientes com menos de 3 compras</b></div></div>';})();
 
 /* ---------- simulador ---------- */
 var CUR={d:50,L:30,X:60,t:70};
 function feira(d){d/=100;return 9.2-120*Math.pow(d-0.34,2);}
 function selo(L){return 12-0.09*Math.pow(L-37,2);}
 function cartao(X){return 8-0.0022*Math.pow(X-72,2)*1.4;}
-function trade(t){return 3.9*(t/70)-0.2*Math.max(0,(t-85))/15;}
+function trade(t){return 5.2-0.0012*Math.pow(t-85,2);}
 function total(p){return feira(p.d)+selo(p.L)+cartao(p.X)+trade(p.t);}
 var simChart=null;
 function sim(){var p={d:+sFeira.value,L:+sSelo.value,X:+sCard.value,t:+sTrade.value};
@@ -670,6 +671,7 @@ var sFeira=document.getElementById('sFeira'),sSelo=document.getElementById('sSel
 var oFeira=document.getElementById('oFeira'),oSelo=document.getElementById('oSelo'),oCard=document.getElementById('oCard'),oTrade=document.getElementById('oTrade');
 var mFluxo=document.getElementById('mFluxo'),mTicket=document.getElementById('mTicket'),mMarg=document.getElementById('mMarg'),mSelo=document.getElementById('mSelo');
 [sFeira,sSelo,sCard,sTrade].forEach(function(s){s.addEventListener('input',sim);});
+document.getElementById('simBest').addEventListener('click',function(){sFeira.value=34;sSelo.value=37;sCard.value=70;sTrade.value=85;sim();});
 document.getElementById('simReset').addEventListener('click',function(){sFeira.value=CUR.d;sSelo.value=CUR.L;sCard.value=CUR.X;sTrade.value=CUR.t;sim();});
 
 /* ---------- lógica das promoções ---------- */
