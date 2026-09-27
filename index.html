@@ -516,6 +516,7 @@ if(hasChart){
   Chart.defaults.plugins.tooltip.backgroundColor='#FFFFFF';Chart.defaults.plugins.tooltip.borderColor='#CFCEC9';Chart.defaults.plugins.tooltip.borderWidth=1;
   Chart.defaults.plugins.tooltip.titleColor=COL.tx;Chart.defaults.plugins.tooltip.bodyColor=COL.tx2;Chart.defaults.plugins.tooltip.padding=10;
   Chart.defaults.maintainAspectRatio=false;
+  if(document.visibilityState==='hidden'||reduce)Chart.defaults.animation=false;
 }
 
 /* ---------- experimentos ---------- */
